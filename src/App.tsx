@@ -156,7 +156,7 @@ function Shell() {
             <span>{n.short}</span>
           </NavLink>
         ))}
-        <button className="nav-item more-btn" onClick={() => setMoreOpen(true)} aria-label="More">
+        <button className="nav-item" onClick={() => setMoreOpen(true)} aria-label="More">
           <Menu size={19} />
           <span>More</span>
         </button>

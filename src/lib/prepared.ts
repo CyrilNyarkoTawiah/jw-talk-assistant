@@ -17,6 +17,7 @@ export interface Prepared {
   weekStart: string
   lm: { cite: string; sourceUrl: string; items: PreparedLMItem[] }
   wt: { cite: string; sourceUrl: string; article: string; items: PreparedWTItem[]; recap: { q: string; comment: string }[] }
+  daily?: { date: string; weekday: string; scripture?: string; ref?: string; comment?: string }[]
 }
 
 export function preparedFor(weekStart: string): Prepared | null {

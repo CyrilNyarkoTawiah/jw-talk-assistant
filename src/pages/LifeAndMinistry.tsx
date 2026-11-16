@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { currentWeek, JW_LINKS, useLibrary } from '../lib/app'
 import { preparedCurrent, type PreparedLMItem } from '../lib/prepared'
 import { buildStudyPrompt, buildGemsPrompt, askAi, SYSTEM_INSTRUCTIONS } from '../lib/ai'
-import { Copy, Check, ExternalLink, Sparkles, Printer } from 'lucide-react'
+import { Copy, Check, ExternalLink, Sparkles, Printer, Share2 } from 'lucide-react'
 
 const STYLES = [
   'Short comment (15-25 seconds)',
@@ -12,6 +12,12 @@ const STYLES = [
   'Additional comment',
   'Practical application',
 ]
+
+async function share(text: string, title: string) {
+  const nav: any = navigator
+  if (nav.share) { try { await nav.share({ title, text }) } catch { /* user cancelled */ } }
+  else { try { await navigator.clipboard.writeText(text) } catch { /* noop */ } }
+}
 
 function CopyBtn({ text, small }: { text: string; small?: boolean }) {
   const [copied, setCopied] = useState(false)
@@ -117,12 +123,15 @@ export default function LifeAndMinistry() {
               <h3 style={{ fontSize: 15.5, margin: '8px 0 2px' }}>{it.num}. {it.title} <span className="muted">({it.mins} min.)</span></h3>
               <p style={{ whiteSpace: 'pre-wrap', fontSize: 14, marginTop: 8 }}>{it.answer}</p>
               {it.scriptures.map((s) => (
-                <p key={s.ref} className="card grey" style={{ margin: '8px 0 0', padding: '8px 12px', fontSize: 13 }}>
+                <p key={s.ref} className="quote">
                   <strong style={{ color: 'var(--gold-deep)' }}>{s.ref}</strong> — “{s.quote}”
                 </p>
               ))}
               <p className="muted" style={{ fontSize: 11.5, marginTop: 8 }}>{it.cite}</p>
-              <div style={{ marginTop: 8 }}><CopyBtn text={it.answer} small /></div>
+              <div style={{ marginTop: 8, display: 'flex', gap: 6 }}>
+                <CopyBtn text={it.answer} small />
+                <button className="btn ghost" style={{ padding: '3px 9px', fontSize: 11.5 }} onClick={() => share(it.answer, it.title)}><Share2 size={12} /> Share</button>
+              </div>
             </div>
           ))}
         </>

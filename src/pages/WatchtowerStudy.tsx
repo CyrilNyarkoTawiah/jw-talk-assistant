@@ -2,9 +2,15 @@ import { useState } from 'react'
 import { currentWeek, useLibrary } from '../lib/app'
 import { preparedCurrent, type PreparedWTItem } from '../lib/prepared'
 import { buildStudyPrompt, askAi, SYSTEM_INSTRUCTIONS } from '../lib/ai'
-import { Copy, Check, ExternalLink, Sparkles, Printer } from 'lucide-react'
+import { Copy, Check, ExternalLink, Sparkles, Printer, Share2 } from 'lucide-react'
 
 const STYLES = ['Short comment (15-25 seconds)', 'Standard comment (25-40 seconds)', 'Detailed comment (40-60 seconds)', 'Deep research answer', 'Additional comment', 'Practical application']
+
+async function share(text: string, title: string) {
+  const nav: any = navigator
+  if (nav.share) { try { await nav.share({ title, text }) } catch { /* user cancelled */ } }
+  else { try { await navigator.clipboard.writeText(text) } catch { /* noop */ } }
+}
 
 function CopyBtn({ text, small }: { text: string; small?: boolean }) {
   const [copied, setCopied] = useState(false)
@@ -29,7 +35,7 @@ function WTItem({ it }: { it: PreparedWTItem }) {
       <p style={{ whiteSpace: 'pre-wrap', fontSize: 14, marginTop: 10, background: 'var(--card)', borderRadius: 10, padding: '10px 14px' }}>{it.comment}</p>
       <p className="muted" style={{ fontSize: 11, marginTop: 4 }}>Meeting comment — read it aloud as your own words.</p>
       {it.scriptures.map((s) => (
-        <p key={s.ref} className="card grey" style={{ margin: '8px 0 0', padding: '8px 12px', fontSize: 13 }}>
+        <p key={s.ref} className="quote">
           <strong style={{ color: 'var(--gold-deep)' }}>{s.ref}</strong> — “{s.quote}”
           {s.use && <span className="muted" style={{ display: 'block', fontSize: 12, marginTop: 2 }}>{s.use}</span>}
         </p>
@@ -47,7 +53,10 @@ function WTItem({ it }: { it: PreparedWTItem }) {
           )}
         </>
       )}
-      <div style={{ marginTop: 8 }}><CopyBtn text={it.comment} small /></div>
+      <div style={{ marginTop: 8, display: 'flex', gap: 6 }}>
+        <CopyBtn text={it.comment} small />
+        <button className="btn ghost" style={{ padding: '3px 9px', fontSize: 11.5 }} onClick={() => share(it.comment, it.q)}><Share2 size={12} /> Share</button>
+      </div>
     </div>
   )
 }

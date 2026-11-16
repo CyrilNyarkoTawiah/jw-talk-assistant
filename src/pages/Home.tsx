@@ -1,201 +1,168 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { currentWeek, isCurrent, JW_LINKS, useLibrary, type WeekEntry } from '../lib/app'
 import { preparedCurrent } from '../lib/prepared'
-import { loadAiConfig, buildTalkPrompt, SYSTEM_INSTRUCTIONS } from '../lib/ai'
-import { BookOpen, Landmark, Mic2, Copy, Check, ExternalLink, CalendarDays, ArrowRight } from 'lucide-react'
+import { BookOpen, Landmark, Mic2, Search, Flame, CalendarDays, Sun, Moon, ChevronRight, Sparkles, CheckCircle2, Quote, Library as LibraryIcon } from 'lucide-react'
 
-const TONES = ['Warm and encouraging', 'Conversational', 'Persuasive', 'Reflective', 'Teaching style', 'Balanced']
-const ILLUS = ['Include several illustrations', 'One or two strong illustrations', 'Where necessary only', 'None', 'Let AI decide']
-const ILLUS_TYPES = ['Everyday life', 'Family', 'Nature & creation', 'Bible accounts', 'Modern-day situations', 'Hypothetical scenario', 'Analogy']
-
-function SectionTitle({ children }: { children: React.ReactNode }) {
-  return <h2 style={{ fontSize: 19, margin: '30px 0 12px' }}>{children}</h2>
+function greeting() {
+  const h = new Date().getHours()
+  if (h < 12) return 'Good morning'
+  if (h < 17) return 'Good afternoon'
+  return 'Good evening'
 }
 
 export default function Home() {
+  const nav = useNavigate()
   const week = currentWeek()
   const prepared = preparedCurrent()
-  const today = new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+  const { theme, toggle } = { theme: localStorage.getItem('jwtalk_theme') ?? 'light', toggle: () => {
+    const t = localStorage.getItem('jwtalk_theme') ?? 'light'
+    localStorage.setItem('jwtalk_theme', t === 'light' ? 'dark' : 'light')
+    document.documentElement.setAttribute('data-theme', t === 'light' ? 'dark' : 'light')
+    location.reload()
+  } }
+  const today = new Date()
+  const todayStr = today.toISOString().slice(0, 10)
+  const daily = prepared?.daily?.find((d) => d.date === todayStr) ?? prepared?.daily?.[0]
+  const { items } = useLibrary()
+
   return (
     <div>
-      <p className="tag">{today}</p>
-      <h1 style={{ fontSize: 26, margin: '10px 0 6px' }}>Welcome</h1>
-      <p className="muted" style={{ maxWidth: 620 }}>
-        Your daily text, this week's meetings, and the talk assistant — in one calm place.
-        Everything links back to the official JW.ORG source material.
-      </p>
-
-      {/* ---- Daily text ---- */}
-      <div className="card" style={{ marginTop: 20, borderLeft: '4px solid var(--gold)', padding: '20px 22px' }}>
-        <span className="tag">Daily text</span>
-        <h2 style={{ fontSize: 20, margin: '10px 0 4px' }}>{week ? `Week of ${week.weekStart}` : 'Daily text'}</h2>
-        <p className="muted">
-          Today's scripture reference and commentary live on the official Daily Text page — always
-          current, never a stale copy. Tap through to read, reflect and pray over it.
-        </p>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 14 }}>
-          <a className="btn gold" href={week?.dailyText ?? JW_LINKS.dailyText} target="_blank" rel="noreferrer">
-            <BookOpen size={16} /> Open today's text on WOL
-          </a>
-          <a className="btn ghost" href={JW_LINKS.studyBible} target="_blank" rel="noreferrer">
-            <ExternalLink size={16} /> Study Bible (NWT)
-          </a>
-        </div>
-      </div>
-
-      {/* ---- Weekly meetings ---- */}
-      <SectionTitle>This week's meetings</SectionTitle>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16 }}>
-        <MeetingCard
-          icon={<BookOpen size={20} />}
-          label="Life and Ministry"
-          sub="Midweek meeting"
-          title={week?.lifeAndMinistry.publication ?? 'Meeting Workbook'}
-          url={week?.lifeAndMinistry.sourceUrl}
-          linkText="Meeting Workbook on WOL"
-          sections={week?.lifeAndMinistry.sections}
-          to="/life-and-ministry"
-          current={week ? isCurrent(week) : false}
-          ready={!!prepared}
-        />
-        <MeetingCard
-          icon={<Landmark size={20} />}
-          label="Watchtower Study"
-          sub="Weekend meeting"
-          title={week?.watchtower.articleTitle ?? 'Study article'}
-          url={week?.watchtower.sourceUrl}
-          linkText="Study article on WOL"
-          to="/watchtower"
-          current={week ? isCurrent(week) : false}
-          ready={!!prepared}
-        />
-      </div>
-
-      {/* ---- Meetings session ---- */}
-      <SectionTitle>Meetings session</SectionTitle>
-      <div className="card grey" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 }}>
-        {['Midweek preparation', 'Weekend preparation', 'Assignments', 'Bible-reading schedule', 'Study notes', 'Meeting comments', 'Song & programme notes', 'Preparation checklist'].map((x) => (
-          <Link key={x} to="/meetings" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', background: 'var(--surface)', borderRadius: 10, fontSize: 13.5, fontWeight: 600 }}>
-            <CalendarDays size={15} /> {x}
-          </Link>
-        ))}
-      </div>
-
-      {/* ---- Talk generator teaser ---- */}
-      <SectionTitle>Prepare your public talk with AI</SectionTitle>
-      <TalkTeaser />
-    </div>
-  )
-}
-
-function MeetingCard(props: {
-  icon: React.ReactNode; label: string; sub: string; title: string;
-  url?: string; linkText: string; sections?: string[]; to: string; current: boolean; ready?: boolean
-}) {
-  return (
-    <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'var(--navy)' }}>
-        {props.icon}
+      {/* greeting row */}
+      <div className="rise d1" style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 6 }}>
         <div>
-          <div style={{ fontWeight: 700, fontSize: 15 }}>{props.label}</div>
-          <div className="muted" style={{ fontSize: 12 }}>{props.sub}</div>
+          <h1 style={{ fontSize: 25, margin: 0, color: 'var(--navy)' }}>{greeting()}, Cyril</h1>
+          <p className="muted" style={{ margin: '3px 0 0', fontWeight: 600, fontSize: 13 }}>
+            {today.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+          </p>
         </div>
-        <span style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
-          {props.ready && <span className="tag" style={{ background: 'rgba(62,107,79,0.14)', color: 'var(--green)' }}>Prepared ✓</span>}
-          {props.current && <span className="tag">Current week</span>}
-        </span>
       </div>
-      <strong style={{ fontSize: 14.5 }}>{props.title}</strong>
-      {props.sections && (
-        <ul style={{ listStyle: 'none', fontSize: 13, color: 'var(--muted)', display: 'grid', gap: 3 }}>
-          {props.sections.map((s) => <li key={s}>• {s}</li>)}
-        </ul>
+
+      {/* daily text hero */}
+      {daily && (
+        <div className="card hero rise d2 press" style={{ marginTop: 16, padding: '18px 20px' }} onClick={() => nav('/research')}>
+          <span className="tag">Daily text · {daily.weekday}</span>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', marginTop: 10 }}>
+            <Quote size={26} style={{ color: 'var(--accent)', flexShrink: 0, marginTop: 2 }} />
+            <div>
+              <p style={{ margin: 0, fontSize: 15.5, fontWeight: 700, lineHeight: 1.45 }}>{daily.scripture ?? ''}</p>
+              {daily.ref && <p style={{ margin: '3px 0 0', fontSize: 12.5, color: '#ffd9a0', fontWeight: 700 }}>{daily.ref}</p>}
+            </div>
+          </div>
+          {daily.comment && (
+            <p className="muted" style={{ marginTop: 10, fontSize: 12.5, lineHeight: 1.55, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+              {daily.comment}
+            </p>
+          )}
+          <a href={JW_LINKS.dailyText} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 800, marginTop: 10, color: '#ffd9a0' }}>
+            Full text on WOL <ChevronRight size={13} />
+          </a>
+        </div>
       )}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
-        <Link className="btn" to={props.to}><ArrowRight size={15} /> Open module</Link>
-        {props.url && <a className="btn ghost" href={props.url} target="_blank" rel="noreferrer"><ExternalLink size={14} /> {props.linkText}</a>}
+
+      {/* this week's meetings */}
+      <div className="rise d3" style={{ display: 'flex', alignItems: 'center', marginTop: 22, marginBottom: 10 }}>
+        <h2 style={{ fontSize: 17, margin: 0 }}>This week’s meetings</h2>
+        {week && <span className="tag soft-navy" style={{ marginLeft: 'auto' }}>Week of {week.weekStart.slice(5)}</span>}
       </div>
+
+      {week && (
+        <div className="tiles rise d4">
+          <MeetingTile
+            icon={<BookOpen size={20} />} bg="var(--mint)"
+            title="Life & Ministry" sub="Midweek meeting"
+            ready={!!prepared}
+            onClick={() => nav('/life-and-ministry')}
+          />
+          <MeetingTile
+            icon={<Landmark size={20} />} bg="var(--lav)"
+            title="Watchtower Study" sub="Weekend meeting"
+            ready={!!prepared}
+            onClick={() => nav('/watchtower')}
+          />
+        </div>
+      )}
+
+      {/* quick actions */}
+      <div className="rise d5" style={{ display: 'flex', alignItems: 'center', marginTop: 22, marginBottom: 10 }}>
+        <h2 style={{ fontSize: 17, margin: 0 }}>Do something now</h2>
+      </div>
+      <div className="tiles rise d6">
+        <Tile icon={<Mic2 size={20} />} bg="var(--peach)" title="Prepare a talk" desc="Outline in, full manuscript out" onClick={() => nav('/talk-assistant')} />
+        <Tile icon={<Search size={20} />} bg="var(--blue)" title="Look up a scripture" desc="NWT-only, every book" onClick={() => nav('/bible-study')} />
+        <Tile icon={<CalendarDays size={20} />} bg="var(--mint)" title="Meeting checklist" desc="Tick off your preparation" onClick={() => nav('/meetings')} />
+        <Tile icon={<LibraryIcon size={20} />} bg="var(--lav)" title="My Library" desc={`${items.length} saved ${items.length === 1 ? 'item' : 'items'}`} onClick={() => nav('/library')} />
+      </div>
+
+      {/* weekly progress */}
+      {prepared && (
+        <WeekProgress rise="d7" />
+      )}
+
+      {/* official links strip */}
+      <div className="card grey rise d8" style={{ marginTop: 20, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+        <span className="muted" style={{ fontSize: 12, fontWeight: 700 }}>Official:</span>
+        <a className="btn ghost press" style={{ padding: '7px 13px', fontSize: 12, background: 'var(--surface)' }} href={JW_LINKS.meetingWorkbook} target="_blank" rel="noreferrer">Workbook</a>
+        <a className="btn ghost press" style={{ padding: '7px 13px', fontSize: 12, background: 'var(--surface)' }} href={JW_LINKS.magazines} target="_blank" rel="noreferrer">Magazines</a>
+        <a className="btn ghost press" style={{ padding: '7px 13px', fontSize: 12, background: 'var(--surface)' }} href={JW_LINKS.jwOrg} target="_blank" rel="noreferrer">JW.ORG</a>
+      </div>
+
+      <p className="muted rise d8" style={{ marginTop: 16, fontSize: 11, textAlign: 'center' }}>
+        Personal study tool · not affiliated with JW.ORG or Watch Tower · scriptures: NWT (2013)
+      </p>
     </div>
   )
 }
 
-function TalkTeaser() {
-  const [outline, setOutline] = useState(() => localStorage.getItem('jwtalk_home_outline') ?? '')
-  const [duration, setDuration] = useState(30)
-  const [tone, setTone] = useState(TONES[0])
-  const [illus, setIllus] = useState(ILLUS[4])
-  const [types, setTypes] = useState<string[]>([])
-  const [copied, setCopied] = useState(false)
-  const { add } = useLibrary()
-
-  const goFull = () => {
-    localStorage.setItem('jwtalk_home_outline', outline)
-    localStorage.setItem('jwtalk_talk_seed', JSON.stringify({ outline, duration, tone, illus, types }))
-  }
-
-  const quickGenerate = async () => {
-    if (!outline.trim()) return
-    goFull()
-    const prompt = buildTalkPrompt(outline, {
-      durationMin: duration, tone, illustrations: illus, illustrationTypes: types,
-    })
-    try { await navigator.clipboard.writeText(prompt); setCopied(true); setTimeout(() => setCopied(false), 2500) }
-    catch { window.prompt('Copy your Hermes prompt (Ctrl+C):', prompt) }
-  }
-
+function MeetingTile({ icon, bg, title, sub, ready, onClick }: { icon: React.ReactNode; bg: string; title: string; sub: string; ready: boolean; onClick: () => void }) {
   return (
-    <div className="card">
-      <p style={{ fontSize: 14, color: 'var(--muted)', maxWidth: 640 }}>
-        Paste your complete public talk outline and let the AI develop it into a fully written,
-        scripture-supported talk you can practise and deliver. The outline is preserved exactly —
-        every point, every scripture, in order.
-      </p>
-      <textarea
-        style={{ minHeight: 150, marginTop: 12 }}
-        placeholder="Paste your complete talk outline here, including the theme, main points, subpoints, scriptures, instructions and allocated time…"
-        value={outline}
-        onChange={(e) => setOutline(e.target.value)}
-      />
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginTop: 12 }}>
-        <label style={{ fontSize: 12.5, fontWeight: 600 }}>
-          Duration
-          <select value={duration} onChange={(e) => setDuration(+e.target.value)} style={{ marginTop: 4 }}>
-            {[5, 10, 15, 30, 45, 60].map((m) => <option key={m} value={m}>{m} minutes</option>)}
-          </select>
-        </label>
-        <label style={{ fontSize: 12.5, fontWeight: 600 }}>
-          Tone
-          <select value={tone} onChange={(e) => setTone(e.target.value)} style={{ marginTop: 4 }}>
-            {TONES.map((t) => <option key={t}>{t}</option>)}
-          </select>
-        </label>
-        <label style={{ fontSize: 12.5, fontWeight: 600 }}>
-          Illustrations
-          <select value={illus} onChange={(e) => setIllus(e.target.value)} style={{ marginTop: 4 }}>
-            {ILLUS.map((t) => <option key={t}>{t}</option>)}
-          </select>
-        </label>
+    <button className="tile press" style={{ textAlign: 'left', fontFamily: 'inherit', cursor: 'pointer' }} onClick={onClick}>
+      <div style={{ display: 'flex', width: '100%', alignItems: 'flex-start' }}>
+        <span className="ico" style={{ background: bg }}>{icon}</span>
+        {ready
+          ? <span className="tag" style={{ marginLeft: 'auto', background: 'var(--green-soft)', color: 'var(--green)', display: 'inline-flex', alignItems: 'center', gap: 4 }}><CheckCircle2 size={11} /> Ready</span>
+          : <span className="tag soft-navy" style={{ marginLeft: 'auto' }}>Soon</span>}
       </div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
-        {ILLUS_TYPES.map((t) => (
-          <button key={t} onClick={() => setTypes((ts) => ts.includes(t) ? ts.filter((x) => x !== t) : [...ts, t])}
-            style={{
-              border: '1px solid var(--line)', background: types.includes(t) ? 'var(--navy)' : 'var(--surface)',
-              color: types.includes(t) ? '#fff' : 'var(--ink)', borderRadius: 20, padding: '5px 12px', fontSize: 12, fontWeight: 600,
-            }}>{t}</button>
-        ))}
+      <div>
+        <strong>{title}</strong>
+        <span className="desc">{sub}</span>
       </div>
-      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 14 }}>
-        <button className="btn green" style={{ padding: '12px 22px', fontSize: 15 }} onClick={quickGenerate} disabled={!outline.trim()}>
-          {copied ? <><Check size={16} /> Prompt copied — paste into Hermes</> : <><Mic2 size={16} /> Generate full talk</>}
-        </button>
-        <Link className="btn ghost" to="/talk-assistant" onClick={goFull}>Open full Talk Assistant <ArrowRight size={15} /></Link>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--accent-deep)', fontWeight: 800, fontSize: 12, marginTop: 'auto' }}>
+        {ready ? 'Open prepared study' : 'Open module'} <ChevronRight size={14} />
       </div>
-      <p className="muted" style={{ marginTop: 10, fontSize: 12.5 }}>
-        {loadAiConfig().mode === 'bridge'
-          ? 'Bridge mode: the button copies a fully-structured prompt. Paste it into your Hermes chat, then keep the returned manuscript in the Talk Assistant or My Library.'
-          : 'Endpoint mode: generation goes through your configured secure backend.'}
+    </button>
+  )
+}
+
+function Tile({ icon, bg, title, desc, onClick }: { icon: React.ReactNode; bg: string; title: string; desc: string; onClick: () => void }) {
+  return (
+    <button className="tile press" style={{ textAlign: 'left', fontFamily: 'inherit', cursor: 'pointer' }} onClick={onClick}>
+      <span className="ico" style={{ background: bg }}>{icon}</span>
+      <div>
+        <strong>{title}</strong>
+        <span className="desc">{desc}</span>
+      </div>
+    </button>
+  )
+}
+
+function WeekProgress({ rise }: { rise: string }) {
+  // preparation progress from the meetings checklist
+  let checks: boolean[] = []
+  try { checks = JSON.parse(localStorage.getItem('jwtalk_checks') ?? 'null') ?? [] } catch { /* noop */ }
+  const done = checks.filter(Boolean).length
+  const pct = checks.length ? Math.round((done / checks.length) * 100) : 0
+  return (
+    <div className={`card ${rise}`} style={{ marginTop: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <span className="tag">Your preparation</span>
+        <strong style={{ marginLeft: 'auto', fontSize: 14 }}>{pct}%</strong>
+      </div>
+      <div className="progress-track" style={{ marginTop: 12 }}>
+        <div className="progress-fill" style={{ width: `${Math.max(pct, 3)}%` }} />
+      </div>
+      <p className="muted" style={{ fontSize: 12, marginTop: 8 }}>
+        {done} of {checks.length || 7} checklist items done · <a href="#/meetings">open checklist</a>
       </p>
     </div>
   )

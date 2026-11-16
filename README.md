@@ -1,58 +1,31 @@
 # JW Talk Assistant
 
-A personal Bible study and congregation meeting preparation companion: the daily text,
-this week's meetings, NWT scripture research, Watchtower and Life-and-Ministry question
-preparation, and a full public-talk manuscript generator.
+A mobile-first web app for preparing congregation meetings and public talks.
 
 **Live:** https://cyrilnyarkotawiah.github.io/jw-talk-assistant/
 
-> Personal tool — not affiliated with or endorsed by JW.ORG or Watch Tower Bible and Tract
-> Society. Official material is **linked**, never copied or redistributed. The NWT is the
-> app's only Bible translation.
+**What it does**
 
-## Current status — Phase 1 & 2 complete
+- **Life & Ministry** — the week's complete programme, every part answered, ready before the meeting
+- **Watchtower Study** — all study questions for the week answered with meeting comments and NWT scriptures
+- **Talk Assistant** — paste a talk outline, get a complete ready-to-deliver manuscript
+- **Bible Study** — NWT scripture lookup (all 66 books)
+- **Meetings** — preparation checklist and personal notes
+- **Research / Library / Settings** — official source links, saved items, appearance and AI backend
 
-| Working | Coming (later phases) |
-|---|---|
-| Home dashboard (daily text, weekly meeting cards, registry links) | Watchtower study article auto-detection |
-| Weekly content registry (manual, no scraping) | Cloud sync (optional, authenticated) |
-| Life & Ministry Q&A + Spiritual Gems prompts | Talk rehearsal mode |
-| Watchtower study question preparation | Scripture verification mode |
-| Talk Assistant: outline → settings → structured prompt | Section-by-section regeneration |
-| Bridge mode (Hermes) + Endpoint mode (secure backend) | |
-| NWT book/reference links (all 66 books) | |
-| My Library, meetings checklist, notes | |
-| Light/dark, responsive, print-friendly | |
+Scriptures are always the New World Translation from wol.jw.org. Weekly studies are prepared at
+build time and ship inside the app — no scraping, no publication text stored, only official links.
+Installable as a home-screen app (PWA), works offline. Personal tool; not affiliated with JW.ORG
+or Watch Tower Bible and Tract Society.
 
-## Architecture
-
-```
-User → React/TS app (GitHub Pages, static)
-     → AI adapter (src/lib/ai.ts)
-          ├─ bridge mode: structured prompt copied into the user's Hermes chat (no keys)
-          └─ endpoint mode: POST to your own secure backend (backend/worker.js —
-             Cloudflare Worker holding the provider key; deploy manually with wrangler)
-     → local storage for talks, notes, checks (jwtalk_* keys)
-```
-
-- **No API keys in the frontend, ever.** The worker template is committed as documentation;
-  it is not auto-deployed and holds no secrets until you add them with `wrangler secret put`.
-- **No scraping.** `src/data/weekly-registry.json` is a manually maintained list of official
-  links (one entry per week). The app displays links and metadata only.
-- Routing uses hash routing for GitHub Pages compatibility.
+**Weekly updates:** new prepared studies are generated and pushed each week — the site updates automatically.
 
 ## Development
 
 ```bash
 npm install
-npm run dev          # local dev server
-npm run build        # typecheck + production build to dist/
+npm run dev      # local dev server
+npm run build    # typecheck + build
 ```
 
-Deploy is automatic on push to `main` (GitHub Actions → GitHub Pages).
-
-## Updating the weekly registry
-
-Edit `src/data/weekly-registry.json` — add an entry for the new week with the official WOL
-URLs (workbook, study article, meetings hub), then commit. The dashboard always shows the
-week containing today's date, falling back to the newest configured week.
+Deploys automatically to GitHub Pages on push to `main`.

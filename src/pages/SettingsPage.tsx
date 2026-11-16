@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { useTheme, allWeeks, isCurrent, type WeekEntry } from '../lib/app'
+import { allWeeks, isCurrent, type WeekEntry } from '../lib/app'
+import { useTheme, THEMES } from '../App'
 import { loadAiConfig, saveAiConfig } from '../lib/ai'
 
 export default function SettingsPage() {
-  const { theme, toggle } = useTheme()
+  const { theme, setTheme } = useTheme()
   const cfg = loadAiConfig()
   const [mode, setMode] = useState(cfg.mode)
   const [endpointUrl, setEndpointUrl] = useState(cfg.endpointUrl)
@@ -22,10 +23,15 @@ export default function SettingsPage() {
 
       <div className="card" style={{ marginTop: 16 }}>
         <span className="tag">Appearance</span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 10 }}>
-          <span style={{ fontSize: 14 }}>Theme: {theme === 'light' ? 'Light' : 'Dark'}</span>
-          <button className="btn ghost" onClick={toggle}>Switch theme</button>
+        <div className="themes-grid">
+          {THEMES.map((t) => (
+            <button key={t.id} className={'theme-card' + (theme === t.id ? ' on' : '')} onClick={() => setTheme(t.id)}>
+              <span className="sw" style={{ background: t.sw }} />
+              {t.name}
+            </button>
+          ))}
         </div>
+        <p className="muted" style={{ fontSize: 12, marginTop: 10 }}>8 themes — tap one to switch instantly.</p>
       </div>
 
       <div className="card" style={{ marginTop: 14 }}>

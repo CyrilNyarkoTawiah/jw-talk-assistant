@@ -1,6 +1,6 @@
 {
-  "name": "JW Talk Assistant",
-  "short_name": "JW Talk",
+  "name": "JW Study Assistant",
+  "short_name": "JW Study",
   "description": "Meeting and talk preparation companion — weekly studies prepared, NWT scriptures, full talk generation.",
   "start_url": "/jw-talk-assistant/",
   "scope": "/jw-talk-assistant/",

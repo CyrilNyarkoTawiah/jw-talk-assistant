@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { currentWeek, isCurrent, JW_LINKS, useLibrary, type WeekEntry } from '../lib/app'
+import { useTheme } from '../App'
 import { preparedCurrent } from '../lib/prepared'
 import { BookOpen, Landmark, Mic2, Search, Flame, CalendarDays, Sun, Moon, ChevronRight, Sparkles, CheckCircle2, Quote, Library as LibraryIcon } from 'lucide-react'
 
@@ -15,12 +16,7 @@ export default function Home() {
   const nav = useNavigate()
   const week = currentWeek()
   const prepared = preparedCurrent()
-  const { theme, toggle } = { theme: localStorage.getItem('jwtalk_theme') ?? 'light', toggle: () => {
-    const t = localStorage.getItem('jwtalk_theme') ?? 'light'
-    localStorage.setItem('jwtalk_theme', t === 'light' ? 'dark' : 'light')
-    document.documentElement.setAttribute('data-theme', t === 'light' ? 'dark' : 'light')
-    location.reload()
-  } }
+  const { theme, setTheme } = useTheme()
   const today = new Date()
   const todayStr = today.toISOString().slice(0, 10)
   const daily = prepared?.daily?.find((d) => d.date === todayStr) ?? prepared?.daily?.[0]
@@ -108,7 +104,7 @@ export default function Home() {
       </div>
 
       <p className="muted rise d8" style={{ marginTop: 16, fontSize: 11, textAlign: 'center' }}>
-        Personal study tool · not affiliated with JW.ORG or Watch Tower · scriptures: NWT (2013)
+        JW Study Assistant · personal tool, not affiliated with JW.ORG · scriptures: NWT (2013)
       </p>
     </div>
   )

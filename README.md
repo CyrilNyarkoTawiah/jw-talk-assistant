@@ -1,4 +1,4 @@
-# JW Talk Assistant
+# JW Study Assistant
 
 A mobile-first web app for preparing congregation meetings and public talks.
 

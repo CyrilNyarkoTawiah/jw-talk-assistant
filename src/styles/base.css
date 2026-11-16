@@ -106,7 +106,7 @@ h1, h2, h3 { letter-spacing: -0.015em; }
 .sidebar .foot { margin-top: auto; padding: 12px; font-size: 10.5px; color: var(--muted); }
 
 .main {
-  flex: 1; min-width: 0; padding: 30px 34px 120px;
+  flex: 1; min-width: 0; padding: 30px 34px 120px; position: relative; z-index: 1;
   max-width: 860px; margin: 0 auto; width: 100%;
 }
 
@@ -329,3 +329,100 @@ select { appearance: none; background-image: linear-gradient(45deg, transparent 
 @media (min-width: 901px) {
   .main { padding-bottom: 40px; }
 }
+
+/* ---------- extended themes ---------- */
+[data-theme='ocean'] {
+  --bg: #e9f2f7; --bg-grad-a: #edf6fa; --bg-grad-b: #ddebf3;
+  --surface: #ffffff; --card: #e2edf4; --line: #d3e2ec;
+  --ink: #1b2b36; --muted: #5f7684; --navy: #14586e; --navy-soft: #2a7d95;
+  --accent: #2a9db5; --accent-deep: #1d7f96;
+  --accent-grad: linear-gradient(135deg, #46bcd4, #1d7f96);
+  --gold: #4fb6cc; --gold-deep: #2a9db5; --green: #2f8465; --green-soft: rgba(47,132,101,0.14);
+  --danger: #c05a48; --lav: #dfeaf5; --mint: #ddeee8; --peach: #fdeede; --blue: #dcecf7;
+}
+[data-theme='forest'] {
+  --bg: #eef3ea; --bg-grad-a: #f2f6ee; --bg-grad-b: #e4ecdf;
+  --surface: #fdfefa; --card: #e2ebdc; --line: #d2decb;
+  --ink: #1f2b22; --muted: #5f7263; --navy: #1f4d33; --navy-soft: #2e6b48;
+  --accent: #4c9d6f; --accent-deep: #357a52;
+  --accent-grad: linear-gradient(135deg, #6cb98c, #357a52);
+  --gold: #6cb98c; --gold-deep: #4c9d6f; --green: #357a52; --green-soft: rgba(53,122,82,0.16);
+  --danger: #b05338; --lav: #e4ecdf; --mint: #dcf0e2; --peach: #f3eddd; --blue: #dfeef0;
+}
+[data-theme='rose'] {
+  --bg: #f9eff3; --bg-grad-a: #fbf2f5; --bg-grad-b: #f2e2e9;
+  --surface: #fffdfd; --card: #f2e4ea; --line: #e6d2dc;
+  --ink: #321f28; --muted: #7c6470; --navy: #6d2a44; --navy-soft: #8d4260;
+  --accent: #d4577e; --accent-deep: #b23e63;
+  --accent-grad: linear-gradient(135deg, #e87ba0, #b23e63);
+  --gold: #e87ba0; --gold-deep: #d4577e; --green: #3e7d57; --green-soft: rgba(62,125,87,0.14);
+  --danger: #a83a4a; --lav: #f0e3ef; --mint: #e5f2e7; --peach: #fbe9e4; --blue: #e9e6f6;
+}
+[data-theme='sunset'] {
+  --bg: #1b1220; --bg-grad-a: #211627; --bg-grad-b: #150e19;
+  --surface: #271c2e; --card: #33253c; --line: #3f2e4a;
+  --ink: #f3e8e2; --muted: #b19a9e; --navy: #f3e8e2; --navy-soft: #4a3654;
+  --accent: #f2704a; --accent-deep: #ff8f6b;
+  --accent-grad: linear-gradient(135deg, #ff8f6b, #e2552e);
+  --gold: #ffb389; --gold-deep: #f2704a; --green: #6fbf8d; --green-soft: rgba(111,191,141,0.16);
+  --danger: #e0705f; --lav: #3a2a44; --mint: #22301f; --peach: #3c2823; --blue: #253048;
+  --shadow: 0 10px 30px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3);
+  --shadow-deep: 0 16px 40px rgba(0,0,0,0.55);
+  --tap: rgba(243,232,226,0.08);
+}
+[data-theme='lavender'] {
+  --bg: #f1eefb; --bg-grad-a: #f4f1fd; --bg-grad-b: #e7e2f6;
+  --surface: #fefeff; --card: #e7e1f5; --line: #d8d0ee;
+  --ink: #241d3d; --muted: #6b6485; --navy: #3b2a70; --navy-soft: #55429b;
+  --accent: #7c5cd6; --accent-deep: #6144b8;
+  --accent-grad: linear-gradient(135deg, #9a7ef0, #6144b8);
+  --gold: #9a7ef0; --gold-deep: #7c5cd6; --green: #3e7d57; --green-soft: rgba(62,125,87,0.14);
+  --danger: #b04a58; --lav: #e7e1f5; --mint: #e0f0e6; --peach: #fbeadd; --blue: #e2e8fb;
+}
+[data-theme='mono'] {
+  --bg: #f4f4f4; --bg-grad-a: #f7f7f7; --bg-grad-b: #eaeaea;
+  --surface: #ffffff; --card: #ebebeb; --line: #dcdcdc;
+  --ink: #1b1b1b; --muted: #6f6f6f; --navy: #1b1b1b; --navy-soft: #3a3a3a;
+  --accent: #1b1b1b; --accent-deep: #1b1b1b;
+  --accent-grad: linear-gradient(135deg, #3a3a3a, #111111);
+  --gold: #6b6b6b; --gold-deep: #444444; --green: #444444; --green-soft: rgba(27,27,27,0.10);
+  --danger: #8a2f2f; --lav: #ececec; --mint: #e9e9e9; --peach: #ededed; --blue: #e7e7e7;
+}
+
+/* ---------- floating bubbles background ---------- */
+.bubbles { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.bubbles span {
+  position: absolute; bottom: -140px; border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, color-mix(in srgb, var(--accent) 30%, transparent), color-mix(in srgb, var(--accent) 8%, transparent) 65%);
+  filter: blur(1px); opacity: 0.5;
+  animation: bubbleRise linear infinite;
+}
+.bubbles span:nth-child(1) { width: 90px; height: 90px; left: 6%;  animation-duration: 34s; animation-delay: 0s; }
+.bubbles span:nth-child(2) { width: 46px; height: 46px; left: 22%; animation-duration: 26s; animation-delay: 6s; }
+.bubbles span:nth-child(3) { width: 130px; height: 130px; left: 38%; animation-duration: 44s; animation-delay: 12s; opacity: 0.35; }
+.bubbles span:nth-child(4) { width: 60px; height: 60px; left: 55%; animation-duration: 30s; animation-delay: 3s; }
+.bubbles span:nth-child(5) { width: 100px; height: 100px; left: 70%; animation-duration: 38s; animation-delay: 9s; opacity: 0.4; }
+.bubbles span:nth-child(6) { width: 38px; height: 38px; left: 84%; animation-duration: 24s; animation-delay: 15s; }
+.bubbles span:nth-child(7) { width: 74px; height: 74px; left: 46%; animation-duration: 41s; animation-delay: 18s; opacity: 0.3; }
+@keyframes bubbleRise {
+  0%   { transform: translateY(0) translateX(0) scale(1); opacity: 0; }
+  8%   { opacity: 0.5; }
+  50%  { transform: translateY(-48vh) translateX(26px) scale(1.06); }
+  90%  { opacity: 0.35; }
+  100% { transform: translateY(-104vh) translateX(-18px) scale(1); opacity: 0; }
+}
+
+/* gentle float for hero */
+@keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+.card.hero.float { animation: floaty 7s ease-in-out infinite; }
+
+/* theme swatches (settings) */
+.themes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; margin-top: 12px; }
+.theme-card {
+  border: 2px solid var(--line); border-radius: 16px; padding: 10px 8px; text-align: center;
+  background: var(--surface); cursor: pointer; font: inherit; font-weight: 700; font-size: 11.5px;
+  color: var(--ink); transition: transform 0.15s ease, border-color 0.2s ease;
+}
+.theme-card:active { transform: scale(0.95); }
+.theme-card.on { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); }
+.theme-card .sw { width: 100%; height: 34px; border-radius: 10px; margin-bottom: 7px; border: 1px solid rgba(0,0,0,0.08); }

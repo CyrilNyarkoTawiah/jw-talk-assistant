@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Flame, BookOpenCheck, Mic2, Share2, Sparkles, ArrowRight } from 'lucide-react'
+import { BookOpenCheck, Mic2, Sparkles, ArrowRight } from 'lucide-react'
 
 const SLIDES = [
   {
@@ -30,9 +30,9 @@ export default function Onboarding({ onDone }: { onDone: () => void }) {
     <div className="onboard">
       <div className="slide" key={i}>
         <div className="brand" style={{ display: 'flex', alignItems: 'center', gap: 10, position: 'absolute', top: 'calc(18px + env(safe-area-inset-top))', left: 26 }}>
-          <div className="brand-logo"><Flame size={17} /></div>
+          <div className="brand-logo"><BookOpenCheck size={17} /></div>
           <div>
-            <div className="brand-name">JW Talk Assistant</div>
+            <div className="brand-name">JW Study Assistant</div>
             <div className="brand-sub">Meeting & talk preparation</div>
           </div>
         </div>

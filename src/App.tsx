@@ -1,9 +1,9 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { HashRouter, Routes, Route, NavLink, Link } from 'react-router-dom'
+import { HashRouter, Routes, Route, NavLink } from 'react-router-dom'
 import {
   Home as HomeIcon, BookOpen, Landmark, Search, Mic2, CalendarDays,
-  FolderOpen, Settings as SettingsIcon, Moon, Sun, ExternalLink, Menu, X, Flame,
-  Sparkles, Compass, Library as LibraryIcon, ChevronRight,
+  FolderOpen, Settings as SettingsIcon, Moon, Sun, Menu, BookOpenCheck,
+  Sparkles, Compass,
 } from 'lucide-react'
 import Home from './pages/Home'
 import LifeAndMinistry from './pages/LifeAndMinistry'
@@ -16,20 +16,34 @@ import Library from './pages/Library'
 import SettingsPage from './pages/SettingsPage'
 import Onboarding from './pages/Onboarding'
 
-/* ---------- theme ---------- */
-const ThemeContext = createContext<{ theme: string; toggle: () => void }>({ theme: 'light', toggle: () => {} })
+/* ---------- themes ---------- */
+export const THEMES = [
+  { id: 'light', name: 'Classic', sw: 'linear-gradient(135deg,#f7f3ea 60%,#e8a13d)' },
+  { id: 'dark', name: 'Midnight', sw: 'linear-gradient(135deg,#13161e 60%,#e8a13d)' },
+  { id: 'ocean', name: 'Ocean', sw: 'linear-gradient(135deg,#edf6fa 60%,#2a9db5)' },
+  { id: 'forest', name: 'Forest', sw: 'linear-gradient(135deg,#f2f6ee 60%,#4c9d6f)' },
+  { id: 'rose', name: 'Rose', sw: 'linear-gradient(135deg,#fbf2f5 60%,#d4577e)' },
+  { id: 'sunset', name: 'Sunset', sw: 'linear-gradient(135deg,#211627 60%,#f2704a)' },
+  { id: 'lavender', name: 'Lavender', sw: 'linear-gradient(135deg,#f4f1fd 60%,#7c5cd6)' },
+  { id: 'mono', name: 'Mono', sw: 'linear-gradient(135deg,#f7f7f7 60%,#1b1b1b)' },
+]
+
+const ThemeContext = createContext<{ theme: string; setTheme: (t: string) => void }>({ theme: 'light', setTheme: () => {} })
 export const useTheme = () => useContext(ThemeContext)
 
 function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState(() => localStorage.getItem('jwtalk_theme') ?? 'light')
+  const [theme, setThemeState] = useState(() => localStorage.getItem('jwtalk_theme') ?? 'light')
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
     localStorage.setItem('jwtalk_theme', theme)
     const meta = document.querySelector('meta[name="theme-color"]')
-    if (meta) meta.setAttribute('content', theme === 'dark' ? '#13161e' : '#f7f3ea')
+    if (meta) {
+      const dark = ['dark', 'sunset'].includes(theme)
+      meta.setAttribute('content', dark ? '#171a24' : '#f7f3ea')
+    }
   }, [theme])
-  const toggle = () => setTheme((t) => (t === 'light' ? 'dark' : 'light'))
-  return <ThemeContext.Provider value={{ theme, toggle }}>{children}</ThemeContext.Provider>
+  const setTheme = (t: string) => setThemeState(t)
+  return <ThemeContext.Provider value={{ theme, setTheme }}>{children}</ThemeContext.Provider>
 }
 
 /* ---------- navigation model ---------- */
@@ -48,9 +62,9 @@ const NAV = [
 function Brand({ compact }: { compact?: boolean }) {
   return (
     <div className="brand">
-      <div className="brand-logo"><Flame size={compact ? 17 : 20} /></div>
+      <div className="brand-logo"><BookOpenCheck size={compact ? 17 : 20} /></div>
       <div>
-        <div className="brand-name">JW Talk Assistant</div>
+        <div className="brand-name">JW Study Assistant</div>
         <div className="brand-sub">Meeting & talk preparation</div>
       </div>
     </div>
@@ -81,11 +95,15 @@ function Sheet({ onClose }: { onClose: () => void }) {
 }
 
 function Shell() {
-  const { theme, toggle } = useTheme()
+  const { theme, setTheme } = useTheme()
   const [moreOpen, setMoreOpen] = useState(false)
   const bottomItems = NAV.filter((n) => n.primary)
   return (
     <div className="shell">
+      <div className="bubbles" aria-hidden>
+        {Array.from({ length: 7 }).map((_, i) => <span key={i} />)}
+      </div>
+
       {/* desktop sidebar */}
       <aside className="sidebar">
         <Brand />
@@ -94,15 +112,20 @@ function Shell() {
             <n.icon size={17} /> {n.label}
           </NavLink>
         ))}
-        <div className="foot">Personal study tool · not affiliated with JW.ORG</div>
+        <div style={{ marginTop: 'auto', padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <button className="btn ghost" style={{ justifyContent: 'flex-start', padding: '8px 12px' }} onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
+            {theme === 'light' ? <Moon size={15} /> : <Sun size={15} />} {theme === 'light' ? 'Dark mode' : 'Light mode'}
+          </button>
+          <div className="foot" style={{ padding: 0 }}>Personal study tool · not affiliated with JW.ORG</div>
+        </div>
       </aside>
 
       {/* mobile top bar */}
-      <div style={{ display: 'flex', flexDirection: 'column', width: '100%', minWidth: 0 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', width: '100%', minWidth: 0, position: 'relative', zIndex: 1 }}>
         <header className="topbar">
           <Brand compact />
           <div style={{ flex: 1 }} />
-          <button className="btn ghost" style={{ padding: '8px 10px' }} onClick={toggle} aria-label="Toggle theme">
+          <button className="btn ghost" style={{ padding: '8px 10px' }} onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} aria-label="Toggle theme">
             {theme === 'light' ? <Moon size={17} /> : <Sun size={17} />}
           </button>
         </header>
@@ -122,16 +145,19 @@ function Shell() {
         </main>
       </div>
 
-      {/* mobile bottom tab bar */}
+      {/* mobile bottom tab bar: Home, L&M, Study, Talk + More */}
       <nav className="bottom-nav">
+        <NavLink to="/" end className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
+          <HomeIcon size={19} /><span>Home</span>
+        </NavLink>
         {bottomItems.map((n) => (
-          <NavLink key={n.to} to={n.to} end={n.to === '/'} className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
-            <n.icon size={20} />
+          <NavLink key={n.to} to={n.to} className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
+            <n.icon size={19} />
             <span>{n.short}</span>
           </NavLink>
         ))}
-        <button className="nav-item" style={{ flex: 1, flexDirection: 'column', gap: 3, alignItems: 'center', padding: '8px 2px 7px', borderRadius: 17, fontSize: 9.5, fontWeight: 700, color: 'var(--muted)', background: 'transparent', border: 'none', fontFamily: 'inherit' }} onClick={() => setMoreOpen(true)}>
-          <Menu size={20} />
+        <button className="nav-item more-btn" onClick={() => setMoreOpen(true)} aria-label="More">
+          <Menu size={19} />
           <span>More</span>
         </button>
       </nav>

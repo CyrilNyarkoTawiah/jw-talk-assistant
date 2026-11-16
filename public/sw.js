@@ -1,5 +1,5 @@
 /* JW Talk Assistant service worker — app-shell cache for offline phone use */
-const CACHE = 'jwtalk-v2'
+const CACHE = 'jwtalk-v3'
 const CORE = [
   '/jw-talk-assistant/',
   '/jw-talk-assistant/index.html',

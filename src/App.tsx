@@ -16,9 +16,10 @@ import Library from './pages/Library'
 import SettingsPage from './pages/SettingsPage'
 import Onboarding from './pages/Onboarding'
 import ProfileSetup from './pages/ProfileSetup'
+import { RELEASE_NOTES } from './release-notes'
 
 /* bump this with every release — triggers the in-app update dialog */
-export const APP_VERSION = '2.3.0'
+export const APP_VERSION = '2.4.0'
 
 /* ---------- themes: each family has a light and a dark mode ---------- */
 export const THEMES = [
@@ -141,6 +142,38 @@ function UpdateDialog() {
     const prev = localStorage.getItem('jwtalk_app_ver')
     return !!prev && prev !== APP_VERSION
   })
+  const [notes, setNotes] = useState<string[]>(() => RELEASE_NOTES[APP_VERSION] ?? [])
+  const [pendingVer, setPendingVer] = useState<string>(APP_VERSION)
+  useEffect(() => {
+    // network version check — catches updates even when the cached shell is stale
+    fetch('version.json', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        if (j && j.v && j.v !== APP_VERSION) {
+          setShow(true)
+          setPendingVer(j.v)
+          setNotes(RELEASE_NOTES[j.v] ?? [])
+        }
+      })
+      .catch(() => {})
+    // service worker update detection while the app is open
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistration().then((reg) => {
+        if (!reg) return
+        reg.addEventListener('updatefound', () => {
+          const w = reg.installing
+          if (!w) return
+          w.addEventListener('statechange', () => {
+            if (w.state === 'installed' && navigator.serviceWorker.controller) {
+              setShow(true)
+              setPendingVer(APP_VERSION)
+              setNotes(RELEASE_NOTES[APP_VERSION] ?? [])
+            }
+          })
+        })
+      }).catch(() => {})
+    }
+  }, [])
   const apply = async () => {
     try {
       if ('serviceWorker' in navigator) {
@@ -163,7 +196,13 @@ function UpdateDialog() {
         <button className="upd-close" onClick={() => setShow(false)} aria-label="Later"><X size={15} /></button>
         <div className="brand-logo upd-ico"><RefreshCw size={20} /></div>
         <h3>Update available</h3>
-        <p className="muted">A new version of JW Study Assistant (v{APP_VERSION}) is ready. Your saved data is kept — refreshing only loads the new app.</p>
+        <p className="muted">Version {pendingVer} of JW Study Assistant is ready. Your saved data is kept — refreshing only loads the new app.</p>
+        {notes.length > 0 && (
+          <div className="upd-notes">
+            <strong>What's new</strong>
+            <ul>{notes.map((n, i) => <li key={i}>{n}</li>)}</ul>
+          </div>
+        )}
         <button className="btn primary" style={{ width: '100%', marginTop: 14 }} onClick={apply}>Refresh now</button>
         <button className="btn ghost" style={{ width: '100%', marginTop: 8 }} onClick={() => setShow(false)}>Later</button>
       </div>

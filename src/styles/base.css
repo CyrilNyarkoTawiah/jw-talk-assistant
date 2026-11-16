@@ -616,3 +616,12 @@ select { appearance: none; background-image: linear-gradient(45deg, transparent 
   --shadow-deep: 0 16px 40px rgba(0,0,0,0.6);
   --tap: rgba(240,240,240,0.08);
 }
+
+/* ---------- update dialog release notes ---------- */
+.upd-notes {
+  margin-top: 12px; text-align: left; background: var(--card);
+  border: 1px solid var(--line); border-radius: 14px; padding: 10px 14px;
+}
+.upd-notes strong { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-deep); }
+.upd-notes ul { margin: 6px 0 2px; padding-left: 18px; }
+.upd-notes li { font-size: 12.5px; color: var(--muted); line-height: 1.5; }

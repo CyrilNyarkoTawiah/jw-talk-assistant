@@ -1,11 +1,11 @@
 {
   "name": "jw-talk-assistant",
   "private": true,
-  "version": "0.1.0",
+  "version": "2.4.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit -p tsconfig.json && vite build",
+    "build": "tsc --noEmit -p tsconfig.json && vite build && node scripts/write-version.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },

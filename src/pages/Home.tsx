@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { currentWeek, isCurrent, JW_LINKS, useLibrary, weekRange, type WeekEntry } from '../lib/app'
 import { useTheme } from '../App'
 import { preparedCurrent } from '../lib/prepared'
-import { BookOpen, Landmark, Mic2, Search, CalendarDays, ChevronRight, CheckCircle2, Quote, Library as LibraryIcon, MessageCircleQuestion, Bell, ExternalLink } from 'lucide-react'
+import { BookOpen, Landmark, Mic2, Search, CalendarDays, ChevronRight, ChevronDown, ChevronUp, CheckCircle2, Quote, Library as LibraryIcon, MessageCircleQuestion, Bell, ExternalLink } from 'lucide-react'
 
 function greeting() {
   const h = new Date().getHours()
@@ -127,6 +127,7 @@ export default function Home() {
   const todayStr = today.toISOString().slice(0, 10)
   const daily = prepared?.daily?.find((d) => d.date === todayStr) ?? prepared?.daily?.[0]
   const { items } = useLibrary()
+  const [dailyOpen, setDailyOpen] = useState(false)
 
   return (
     <div>
@@ -152,12 +153,31 @@ export default function Home() {
             </div>
           </div>
           {daily.comment && (
-            <p className="muted" style={{ marginTop: 10, fontSize: 12.5, lineHeight: 1.55, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+            <p
+              className="muted"
+              onClick={(e) => { e.stopPropagation(); setDailyOpen(!dailyOpen) }}
+              style={{
+                marginTop: 10, fontSize: 12.5, lineHeight: 1.55, cursor: 'pointer',
+                ...(dailyOpen ? {} : { display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }),
+              }}
+            >
               {daily.comment}
             </p>
           )}
-          <a href={JW_LINKS.dailyText} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 800, marginTop: 10, color: '#ffd9a0' }}>
-            Full text on WOL <ChevronRight size={13} />
+          {daily.comment && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setDailyOpen(!dailyOpen) }}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 800,
+                marginTop: 8, color: '#ffd9a0', background: 'rgba(255,255,255,0.08)', border: 'none',
+                borderRadius: 999, padding: '6px 12px', cursor: 'pointer', fontFamily: 'inherit',
+              }}
+            >
+              {dailyOpen ? 'Show less' : 'Read full text'} {dailyOpen ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+            </button>
+          )}
+          <a href={JW_LINKS.dailyText} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 800, marginTop: 10, marginLeft: daily.comment ? 8 : 0, color: '#ffd9a0' }}>
+            WOL <ChevronRight size={13} />
           </a>
         </div>
       )}

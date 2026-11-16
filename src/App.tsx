@@ -64,7 +64,7 @@ function Brand({ compact }: { compact?: boolean }) {
     <div className="brand">
       <div className="brand-logo"><BookOpenCheck size={compact ? 17 : 20} /></div>
       <div>
-        <div className="brand-name">JW Study Assistant</div>
+        <div className="brand-name">JW Study Assistant<span className="spark" aria-hidden>\u2726</span></div>
         <div className="brand-sub">Meeting & talk preparation</div>
       </div>
     </div>
@@ -123,7 +123,7 @@ function Shell() {
       {/* mobile top bar */}
       <div style={{ display: 'flex', flexDirection: 'column', width: '100%', minWidth: 0, position: 'relative', zIndex: 1 }}>
         <header className="topbar">
-          <Brand compact />
+          <Brand />
           <div style={{ flex: 1 }} />
           <button className="btn ghost" style={{ padding: '8px 10px' }} onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} aria-label="Toggle theme">
             {theme === 'light' ? <Moon size={17} /> : <Sun size={17} />}

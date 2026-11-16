@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { currentWeek, isCurrent, JW_LINKS, useLibrary, type WeekEntry } from '../lib/app'
 import { useTheme } from '../App'
 import { preparedCurrent } from '../lib/prepared'
-import { BookOpen, Landmark, Mic2, Search, Flame, CalendarDays, Sun, Moon, ChevronRight, Sparkles, CheckCircle2, Quote, Library as LibraryIcon } from 'lucide-react'
+import { BookOpen, Landmark, Mic2, Search, CalendarDays, ChevronRight, CheckCircle2, Quote, Library as LibraryIcon, MessageCircleQuestion, Bell, ExternalLink } from 'lucide-react'
 
 function greeting() {
   const h = new Date().getHours()
@@ -17,6 +17,94 @@ export default function Home() {
   const week = currentWeek()
   const prepared = preparedCurrent()
   const { theme, setTheme } = useTheme()
+  const userName = localStorage.getItem('jwtalk_user') || ''
+  const [askQ, setAskQ] = useState('')
+  const [askBusy, setAskBusy] = useState(false)
+  const [askResults, setAskResults] = useState<{ title: string; href: string; pub: string }[] | null>(null)
+  const [askErr, setAskErr] = useState('')
+  const [remindOn, setRemindOn] = useState(() => localStorage.getItem('jwtalk_remind') === '1' && 'Notification' in window && Notification.permission === 'granted')
+
+  useEffect(() => {
+    const tick = () => {
+      if (!('Notification' in window) || Notification.permission !== 'granted') return
+      if (localStorage.getItem('jwtalk_remind') !== '1') return
+      const [hh, mm] = (localStorage.getItem('jwtalk_remind_time') ?? '07:00').split(':').map(Number)
+      const now = new Date()
+      if (now.getHours() < hh || (now.getHours() === hh && now.getMinutes() < mm)) return
+      const today = now.toISOString().slice(0, 10)
+      if (localStorage.getItem('jwtalk_last_notify') === today) return
+      const prep = preparedCurrent()
+      const dt = prep?.daily?.find((d) => d.date === today)
+      try {
+        new Notification('Daily Text — ' + (dt?.ref ?? 'JW Study Assistant'), {
+          body: (dt?.scripture ?? 'Your daily text is waiting.') + ' Open the app to read it.',
+        })
+        localStorage.setItem('jwtalk_last_notify', today)
+      } catch { /* notifications unsupported */ }
+    }
+    tick()
+    const t = setInterval(tick, 30000)
+    return () => clearInterval(t)
+  }, [])
+
+  async function runAsk() {
+    const q = askQ.trim()
+    if (!q || askBusy) return
+    setAskBusy(true); setAskErr(''); setAskResults(null)
+    const url = 'https://wol.jw.org/en/wol/s/r1/lp-e?q=' + encodeURIComponent(q)
+    // 1) r.jina.ai reader (CORS-friendly, returns markdown)
+    try {
+      const c1 = new AbortController(); const k1 = setTimeout(() => c1.abort(), 20000)
+      const r1 = await fetch('https://r.jina.ai/' + url, { signal: c1.signal })
+      clearTimeout(k1)
+      if (r1.ok) {
+        const md = await r1.text()
+        const out: { title: string; href: string; pub: string }[] = []
+        const lines = md.split('\n')
+        for (let i = 0; i < lines.length && out.length < 8; i++) {
+          const m = lines[i].match(/^\*\s+\[([^\]]+)\]\((https:\/\/wol\.jw\.org\/en\/wol\/d\/r1\/lp-e\/\d+)\)\s*$/)
+          if (!m) continue
+          let pub = ''
+          for (let j = i + 1; j < Math.min(i + 5, lines.length); j++) {
+            if (lines[j].includes('](')) break
+            const pm = lines[j].match(/^\*\s+\*\s+(.+?)\s*$/)
+            if (pm) { pub = pm[1].trim(); break }
+          }
+          if (!out.some((o) => o.href === m[2])) out.push({ title: m[1].trim(), href: m[2], pub })
+        }
+        if (out.length) { setAskResults(out); setAskBusy(false); return }
+      }
+    } catch { /* fall through to proxies */ }
+    // 2) HTML via CORS proxies (fallback)
+    const proxies = [
+      'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+      'https://corsproxy.io/?url=' + encodeURIComponent(url),
+      'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url),
+    ]
+    for (const purl of proxies) {
+      try {
+        const ctrl = new AbortController()
+        const kill = setTimeout(() => ctrl.abort(), 15000)
+        const res = await fetch(purl, { signal: ctrl.signal })
+        clearTimeout(kill)
+        if (!res.ok) continue
+        const html = await res.text()
+        const doc = new DOMParser().parseFromString(html, 'text/html')
+        const out: { title: string; href: string; pub: string }[] = []
+        doc.querySelectorAll('ul.directory.resultContentTopic').forEach((ul) => {
+          if (out.length >= 8) return
+          const a = ul.querySelector('li.caption a.lnk')
+          const pub = ul.querySelector('li.ref')
+          if (a && a.getAttribute('href')) {
+            out.push({ title: (a.textContent ?? '').trim(), href: 'https://wol.jw.org' + a.getAttribute('href'), pub: (pub?.textContent ?? '').trim() })
+          }
+        })
+        if (out.length) { setAskResults(out); setAskBusy(false); return }
+      } catch { /* next proxy */ }
+    }
+    setAskErr("Couldn't reach jw.org just now — check your connection and try again.")
+    setAskBusy(false)
+  }
   const today = new Date()
   const todayStr = today.toISOString().slice(0, 10)
   const daily = prepared?.daily?.find((d) => d.date === todayStr) ?? prepared?.daily?.[0]
@@ -27,7 +115,7 @@ export default function Home() {
       {/* greeting row */}
       <div className="rise d1" style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 6 }}>
         <div>
-          <h1 style={{ fontSize: 25, margin: 0, color: 'var(--navy)' }}>{greeting()}, Cyril</h1>
+          <h1 style={{ fontSize: 25, margin: 0, color: 'var(--navy)' }}>{greeting()}{userName ? ', ' + userName : ''}</h1>
           <p className="muted" style={{ margin: '3px 0 0', fontWeight: 600, fontSize: 13 }}>
             {today.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
           </p>
@@ -94,6 +182,53 @@ export default function Home() {
       {prepared && (
         <WeekProgress rise="d7" />
       )}
+
+      {/* ask jw.org */}
+      <div className="card rise d7" style={{ marginTop: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span className="tag">Ask jw.org</span>
+          <Bell
+            size={16} style={{ marginLeft: 'auto', color: remindOn ? 'var(--green)' : 'var(--muted)', cursor: 'pointer' }}
+            onClick={async () => {
+              if (!('Notification' in window)) return
+              if (remindOn) { localStorage.setItem('jwtalk_remind', '0'); setRemindOn(false); return }
+              const perm = await Notification.requestPermission()
+              if (perm === 'granted') { localStorage.setItem('jwtalk_remind', '1'); setRemindOn(true) }
+            }}
+          />
+        </div>
+        <div className="ask-row">
+          <input
+            placeholder="Ask anything — e.g. why pray in Jesus' name?"
+            value={askQ} onChange={(e) => setAskQ(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') runAsk() }}
+          />
+          <button className="btn primary" onClick={runAsk} disabled={askBusy || !askQ.trim()} style={{ whiteSpace: 'nowrap', padding: '10px 16px' }}>
+            {askBusy ? 'Searching…' : 'Search'}
+          </button>
+        </div>
+        {remindOn && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
+            <p className="muted" style={{ fontSize: 11.5, margin: 0 }}>🔔 Daily-text reminder on at</p>
+            <input type="time" defaultValue={localStorage.getItem('jwtalk_remind_time') ?? '07:00'}
+              onChange={(e) => { localStorage.setItem('jwtalk_remind_time', e.target.value || '07:00') }}
+              style={{ width: 'auto', padding: '5px 8px', fontSize: 12.5 }} />
+          </div>
+        )}
+        {askErr && <p className="muted" style={{ fontSize: 12.5, marginTop: 10, color: 'var(--danger)' }}>{askErr}</p>}
+        {askResults && (
+          <div style={{ marginTop: 8 }}>
+            {askResults.map((r, i) => (
+              <div className="ask-result" key={i}>
+                <a href={r.href} target="_blank" rel="noreferrer">
+                  {r.title} <ExternalLink size={11} />
+                </a>
+                {r.pub && <div className="ask-pub">{r.pub}</div>}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* official links strip */}
       <div className="card grey rise d8" style={{ marginTop: 20, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>

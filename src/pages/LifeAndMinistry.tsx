@@ -31,6 +31,22 @@ function CopyBtn({ text, small }: { text: string; small?: boolean }) {
   )
 }
 
+function AnswerBody({ text }: { text: string }) {
+  return (
+    <p style={{ whiteSpace: 'pre-wrap', fontSize: 14, marginTop: 8 }}>
+      {text.split('\n').map((line, i) => {
+        const m = line.match(/^(.+?)\((Publisher|Householder)\):(\s?.*)$/)
+        if (!m) return <span key={i}>{line + '\n'}</span>
+        return (
+          <span key={i} className={'dlg ' + (m[2] === 'Publisher' ? 'dlg-pub' : 'dlg-hh')}>
+            <strong>{m[1]}({m[2]}):</strong>{m[3] + '\n'}
+          </span>
+        )
+      })}
+    </p>
+  )
+}
+
 export default function LifeAndMinistry() {
   const week = currentWeek()
   const prepared = preparedCurrent()
@@ -121,7 +137,7 @@ export default function LifeAndMinistry() {
             <div className="card" key={it.num} style={{ marginTop: 12 }}>
               <span className="tag">{kindLabel[it.kind] ?? it.kind}</span>
               <h3 style={{ fontSize: 15.5, margin: '8px 0 2px' }}>{it.num}. {it.title} <span className="muted">({it.mins} min.)</span></h3>
-              <p style={{ whiteSpace: 'pre-wrap', fontSize: 14, marginTop: 8 }}>{it.answer}</p>
+              <AnswerBody text={it.answer} />
               {it.scriptures.map((s) => (
                 <p key={s.ref} className="quote">
                   <strong style={{ color: 'var(--gold-deep)' }}>{s.ref}</strong> — “{s.quote}”

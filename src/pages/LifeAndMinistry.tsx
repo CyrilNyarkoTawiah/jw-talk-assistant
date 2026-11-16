@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { currentWeek, JW_LINKS, useLibrary } from '../lib/app'
-import { buildStudyPrompt, buildGemsPrompt, askAi, loadAiConfig, SYSTEM_INSTRUCTIONS } from '../lib/ai'
-import { Copy, Check, ExternalLink, Sparkles } from 'lucide-react'
+import { preparedCurrent, type PreparedLMItem } from '../lib/prepared'
+import { buildStudyPrompt, buildGemsPrompt, askAi, SYSTEM_INSTRUCTIONS } from '../lib/ai'
+import { Copy, Check, ExternalLink, Sparkles, Printer } from 'lucide-react'
 
 const STYLES = [
   'Short comment (15-25 seconds)',
@@ -12,33 +13,29 @@ const STYLES = [
   'Practical application',
 ]
 
-function AnswerBlock({ title, body }: { title: string; body: string }) {
+function CopyBtn({ text, small }: { text: string; small?: boolean }) {
   const [copied, setCopied] = useState(false)
   return (
-    <div className="card" style={{ marginTop: 14 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span className="tag">{title}</span>
-        <button className="btn ghost" style={{ padding: '5px 10px', fontSize: 12 }} onClick={async () => {
-          await navigator.clipboard.writeText(body)
-          setCopied(true); setTimeout(() => setCopied(false), 2000)
-        }}>{copied ? <Check size={13} /> : <Copy size={13} />}</button>
-      </div>
-      <p style={{ whiteSpace: 'pre-wrap', marginTop: 10, fontSize: 14 }}>{body}</p>
-    </div>
+    <button className="btn ghost" style={{ padding: small ? '3px 9px' : '6px 12px', fontSize: small ? 11.5 : 12.5 }}
+      onClick={async () => {
+        try { await navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1800) } catch { /* noop */ }
+      }}>
+      {copied ? <Check size={13} /> : <Copy size={13} />} {copied ? 'Copied' : 'Copy'}
+    </button>
   )
 }
 
 export default function LifeAndMinistry() {
   const week = currentWeek()
+  const prepared = preparedCurrent()
+  const { add } = useLibrary()
+
+  // ---- extra (custom) prep, secondary tool ----
   const [material, setMaterial] = useState('')
   const [questions, setQuestions] = useState('')
   const [style, setStyle] = useState(STYLES[1])
   const [answers, setAnswers] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
-  const [err, setErr] = useState('')
-  const { add } = useLibrary()
-
-  // Gems tool
   const [gemVerse, setGemVerse] = useState('')
   const [gemQ, setGemQ] = useState('')
   const [gemOut, setGemOut] = useState<string | null>(null)
@@ -46,20 +43,21 @@ export default function LifeAndMinistry() {
 
   const runQna = async () => {
     if (!questions.trim()) return
-    setBusy(true); setErr(''); setAnswers(null)
+    setBusy(true); setAnswers(null)
     const prompt = buildStudyPrompt(questions, material, style)
     try {
       const out = await askAi(SYSTEM_INSTRUCTIONS, prompt)
       if (out === null) {
         let ok = false
         try { await navigator.clipboard.writeText(prompt); ok = true } catch { /* fallback */ }
-        if (ok) setAnswers('BRIDGE MODE — your prompt has been copied. Paste it into your Hermes chat, then paste the returned answers back here (or straight into My Library).')
-        else setAnswers('BRIDGE MODE — clipboard was blocked. Use the Talk Assistant page, which shows the prompt for manual copying, or run the generation from your Hermes chat directly with this outline:\n\n' + prompt.slice(0, 600) + '…')
+        setAnswers(ok
+          ? 'BRIDGE MODE — prompt copied. Paste it into your Hermes chat, then paste the returned answers back here.'
+          : 'BRIDGE MODE — clipboard blocked. Paste your questions into your Hermes chat directly:\n\n' + prompt.slice(0, 700) + '…')
       } else {
         setAnswers(out)
         add({ title: `L&M answers — ${new Date().toLocaleDateString()}`, category: 'Life and Ministry Answers', body: out } as any)
       }
-    } catch (e: any) { setErr(e.message) }
+    } catch (e: any) { setAnswers('Error: ' + e.message) }
     setBusy(false)
   }
 
@@ -70,75 +68,109 @@ export default function LifeAndMinistry() {
     try {
       const out = await askAi(SYSTEM_INSTRUCTIONS, prompt)
       if (out === null) {
-        await navigator.clipboard.writeText(prompt)
-        setGemOut('BRIDGE MODE — prompt copied. Paste into your Hermes chat; the returned comment is your spiritual-gem answer.')
+        let ok = false
+        try { await navigator.clipboard.writeText(prompt); ok = true } catch { /* fallback */ }
+        setGemOut(ok ? 'BRIDGE MODE — prompt copied. Paste into your Hermes chat; the returned comment is your gem answer.'
+          : 'BRIDGE MODE — clipboard blocked. Paste this into your Hermes chat:\n\n' + prompt)
       } else setGemOut(out)
     } catch (e: any) { setGemOut('Error: ' + e.message) }
     setGemBusy(false)
+  }
+
+  const saveAll = () => {
+    if (!prepared) return
+    const body = prepared.lm.items.map((it: PreparedLMItem) =>
+      `${it.num}. ${it.title}\n${it.answer}\n${it.scriptures.map((s) => `${s.ref} — “${s.quote}”`).join('\n')}\n${it.cite}`).join('\n\n———\n\n')
+    add({ title: `L&M week ${prepared.weekStart} — complete`, category: 'Life and Ministry Answers', body } as any)
+    alert('The complete week is saved to My Library (this device).')
+  }
+
+  const kindLabel: Record<string, string> = {
+    treasures: "TREASURES FROM GOD'S WORD", gems: 'SPIRITUAL GEMS', reading: 'BIBLE READING',
+    apply: 'APPLY YOURSELF TO THE FIELD MINISTRY', living: 'LIVING AS CHRISTIANS',
   }
 
   return (
     <div>
       <h1 style={{ fontSize: 24 }}>Life and Ministry Meeting</h1>
       <p className="muted" style={{ marginTop: 4 }}>
-        {week ? <>Week of {week.weekStart} · <a href={week.lifeAndMinistry.sourceUrl} target="_blank" rel="noreferrer">{week.lifeAndMinistry.publication} <ExternalLink size={11} /></a></> : 'No week configured yet — add it in Settings.'}
+        {week ? <>Week of {week.weekStart} · <a href={week.lifeAndMinistry.sourceUrl} target="_blank" rel="noreferrer">{week.lifeAndMinistry.publication} <ExternalLink size={11} /></a></> : 'No week configured yet.'}
       </p>
 
-      <div className="card grey" style={{ marginTop: 16, fontSize: 13.5 }}>
-        <strong>This week's programme sections</strong>
-        <div style={{ display: 'grid', gap: 4, marginTop: 6, color: 'var(--muted)' }}>
-          {(week?.lifeAndMinistry.sections ?? []).map((s) => <div key={s}>• {s}</div>)}
-        </div>
-        <a className="btn ghost" style={{ marginTop: 10 }} href={week?.meetingsHub ?? 'https://wol.jw.org/en/wol/meetings/r1/lp-e'} target="_blank" rel="noreferrer">
-          <ExternalLink size={14} /> Open this week's material
-        </a>
-      </div>
+      {prepared ? (
+        <>
+          <div className="card" style={{ marginTop: 16, borderLeft: '4px solid var(--green)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              <span className="tag" style={{ background: 'rgba(62,107,79,0.14)', color: 'var(--green)' }}>Everything prepared ✓</span>
+              <span className="muted">The complete programme for {prepared.weekStart} — every part has a ready answer below.</span>
+              <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
+                <button className="btn ghost" onClick={saveAll}>Save all to Library</button>
+                <button className="btn ghost" onClick={() => window.print()}><Printer size={14} /> Print</button>
+              </div>
+            </div>
+            <p className="muted" style={{ marginTop: 8, fontSize: 12.5 }}>Source: {prepared.lm.cite} · <a href={prepared.lm.sourceUrl} target="_blank" rel="noreferrer">official workbook <ExternalLink size={10} /></a></p>
+          </div>
 
-      {/* Q&A */}
-      <h2 style={{ fontSize: 18, margin: '26px 0 10px' }}>Prepare questions &amp; answers</h2>
-      <div className="card">
-        <p className="muted" style={{ fontSize: 12.5 }}>
-          Paste the questions from this week's programme (Treasures, Gems questions, Living as Christians —
-          everything you want to prepare). Add the workbook material below it if you want answers grounded
-          in the exact paragraphs. The AI answers every question in order, using the NWT.
-        </p>
-        <textarea style={{ minHeight: 130, marginTop: 10 }}
-          placeholder={'Questions, e.g.\n1. What can we learn from the example of a faithful servant of Jehovah?\n2. How does …'}
-          value={questions} onChange={(e) => setQuestions(e.target.value)} />
-        <textarea style={{ minHeight: 90, marginTop: 10 }}
-          placeholder="Optional: paste the corresponding workbook paragraphs / cited references here for source-grounded answers"
-          value={material} onChange={(e) => setMaterial(e.target.value)} />
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', marginTop: 10 }}>
-          <select style={{ width: 'auto', flex: 1 }} value={style} onChange={(e) => setStyle(e.target.value)}>
-            {STYLES.map((s) => <option key={s}>{s}</option>)}
-          </select>
-          <button className="btn green" onClick={runQna} disabled={busy || !questions.trim()} style={{ whiteSpace: 'nowrap' }}>
-            <Sparkles size={15} /> {busy ? 'Preparing…' : 'Prepare answers'}
-          </button>
+          {prepared.lm.items.map((it) => (
+            <div className="card" key={it.num} style={{ marginTop: 12 }}>
+              <span className="tag">{kindLabel[it.kind] ?? it.kind}</span>
+              <h3 style={{ fontSize: 15.5, margin: '8px 0 2px' }}>{it.num}. {it.title} <span className="muted">({it.mins} min.)</span></h3>
+              <p style={{ whiteSpace: 'pre-wrap', fontSize: 14, marginTop: 8 }}>{it.answer}</p>
+              {it.scriptures.map((s) => (
+                <p key={s.ref} className="card grey" style={{ margin: '8px 0 0', padding: '8px 12px', fontSize: 13 }}>
+                  <strong style={{ color: 'var(--gold-deep)' }}>{s.ref}</strong> — “{s.quote}”
+                </p>
+              ))}
+              <p className="muted" style={{ fontSize: 11.5, marginTop: 8 }}>{it.cite}</p>
+              <div style={{ marginTop: 8 }}><CopyBtn text={it.answer} small /></div>
+            </div>
+          ))}
+        </>
+      ) : (
+        <div className="card grey" style={{ marginTop: 16 }}>
+          <p className="muted">The prepared study for this week is not in the app yet — it is added each week at build time. Meanwhile, use the tools below.</p>
         </div>
-        {err && <p style={{ color: 'var(--danger)', marginTop: 8 }}>{err}</p>}
-        {answers && <AnswerBlock title="Answers" body={answers} />}
-      </div>
+      )}
 
-      {/* Gems */}
-      <h2 style={{ fontSize: 18, margin: '26px 0 10px' }}>Digging for Spiritual Gems</h2>
-      <div className="card">
-        <div style={{ display: 'grid', gap: 10 }}>
-          <input type="text" placeholder="Bible reading passage or verse, e.g. Jeremiah 51:7"
-            value={gemVerse} onChange={(e) => setGemVerse(e.target.value)} />
-          <input type="text" placeholder="Your question about the verse (optional)"
-            value={gemQ} onChange={(e) => setGemQ(e.target.value)} />
-          <button className="btn" onClick={runGems} disabled={gemBusy}>
+      <details style={{ marginTop: 20 }}>
+        <summary style={{ cursor: 'pointer', fontWeight: 700, fontSize: 15 }}>Prepare extra questions (AI tool)</summary>
+        <div className="card" style={{ marginTop: 10 }}>
+          <textarea style={{ minHeight: 110 }} placeholder="Any additional questions to prepare…"
+            value={questions} onChange={(e) => setQuestions(e.target.value)} />
+          <textarea style={{ minHeight: 80, marginTop: 8 }} placeholder="Optional: paste workbook material for grounding"
+            value={material} onChange={(e) => setMaterial(e.target.value)} />
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 8 }}>
+            <select style={{ width: 'auto', flex: 1 }} value={style} onChange={(e) => setStyle(e.target.value)}>
+              {STYLES.map((s) => <option key={s}>{s}</option>)}
+            </select>
+            <button className="btn green" onClick={runQna} disabled={busy || !questions.trim()} style={{ whiteSpace: 'nowrap' }}>
+              <Sparkles size={15} /> {busy ? 'Preparing…' : 'Prepare answers'}
+            </button>
+          </div>
+          {answers && (
+            <div className="card grey" style={{ marginTop: 12 }}>
+              <span className="tag">Answers</span>
+              <p style={{ whiteSpace: 'pre-wrap', marginTop: 10, fontSize: 14 }}>{answers}</p>
+            </div>
+          )}
+        </div>
+        <div className="card" style={{ marginTop: 10 }}>
+          <input type="text" placeholder="Gem verse, e.g. La 2:19" value={gemVerse} onChange={(e) => setGemVerse(e.target.value)} />
+          <input type="text" style={{ marginTop: 8 }} placeholder="Your question (optional)" value={gemQ} onChange={(e) => setGemQ(e.target.value)} />
+          <button className="btn" style={{ marginTop: 8 }} onClick={runGems} disabled={gemBusy || (!gemVerse.trim() && !gemQ.trim())}>
             <Sparkles size={15} /> {gemBusy ? 'Digging…' : 'Prepare gem comment'}
           </button>
+          {gemOut && (
+            <div className="card grey" style={{ marginTop: 12 }}>
+              <span className="tag">Spiritual gem</span>
+              <p style={{ whiteSpace: 'pre-wrap', marginTop: 10, fontSize: 14 }}>{gemOut}</p>
+            </div>
+          )}
         </div>
-        {gemOut && <AnswerBlock title="Spiritual gem" body={gemOut} />}
-      </div>
+      </details>
 
       <p className="muted" style={{ marginTop: 18, fontSize: 12.5 }}>
-        Bible reading: open the <a href={JW_LINKS.nwtBible} target="_blank" rel="noreferrer">NWT on JW.ORG</a> for the
-        weekly chapters. Source policy: the app links to official material and works on what you supply — it never
-        redistributes publications.
+        Bible reading: <a href={JW_LINKS.nwtBible} target="_blank" rel="noreferrer">NWT on JW.ORG</a>. Prepared answers use the NWT only, with the sources cited in the workbook.
       </p>
     </div>
   )

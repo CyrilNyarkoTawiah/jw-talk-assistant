@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { currentWeek, isCurrent, JW_LINKS, useLibrary, type WeekEntry } from '../lib/app'
+import { preparedCurrent } from '../lib/prepared'
 import { loadAiConfig, buildTalkPrompt, SYSTEM_INSTRUCTIONS } from '../lib/ai'
 import { BookOpen, Landmark, Mic2, Copy, Check, ExternalLink, CalendarDays, ArrowRight } from 'lucide-react'
 
@@ -14,6 +15,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 
 export default function Home() {
   const week = currentWeek()
+  const prepared = preparedCurrent()
   const today = new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
   return (
     <div>
@@ -55,6 +57,7 @@ export default function Home() {
           sections={week?.lifeAndMinistry.sections}
           to="/life-and-ministry"
           current={week ? isCurrent(week) : false}
+          ready={!!prepared}
         />
         <MeetingCard
           icon={<Landmark size={20} />}
@@ -65,6 +68,7 @@ export default function Home() {
           linkText="Study article on WOL"
           to="/watchtower"
           current={week ? isCurrent(week) : false}
+          ready={!!prepared}
         />
       </div>
 
@@ -87,7 +91,7 @@ export default function Home() {
 
 function MeetingCard(props: {
   icon: React.ReactNode; label: string; sub: string; title: string;
-  url?: string; linkText: string; sections?: string[]; to: string; current: boolean
+  url?: string; linkText: string; sections?: string[]; to: string; current: boolean; ready?: boolean
 }) {
   return (
     <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -97,7 +101,10 @@ function MeetingCard(props: {
           <div style={{ fontWeight: 700, fontSize: 15 }}>{props.label}</div>
           <div className="muted" style={{ fontSize: 12 }}>{props.sub}</div>
         </div>
-        {props.current && <span className="tag" style={{ marginLeft: 'auto' }}>Current week</span>}
+        <span style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
+          {props.ready && <span className="tag" style={{ background: 'rgba(62,107,79,0.14)', color: 'var(--green)' }}>Prepared ✓</span>}
+          {props.current && <span className="tag">Current week</span>}
+        </span>
       </div>
       <strong style={{ fontSize: 14.5 }}>{props.title}</strong>
       {props.sections && (

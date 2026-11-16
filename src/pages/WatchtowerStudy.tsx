@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { currentWeek, useLibrary } from '../lib/app'
+import { currentWeek, useLibrary, weekRange } from '../lib/app'
 import { preparedCurrent, type PreparedWTItem } from '../lib/prepared'
 import { buildStudyPrompt, askAi, SYSTEM_INSTRUCTIONS } from '../lib/ai'
-import { Copy, Check, ExternalLink, Sparkles, Printer, Share2 } from 'lucide-react'
+import { Copy, Check, ExternalLink, Sparkles, Printer, Share2, CheckCircle2, CalendarDays } from 'lucide-react'
 
 const STYLES = ['Short comment (15-25 seconds)', 'Standard comment (25-40 seconds)', 'Detailed comment (40-60 seconds)', 'Deep research answer', 'Additional comment', 'Practical application']
 
@@ -107,25 +107,36 @@ export default function WatchtowerStudy() {
 
   return (
     <div>
-      <h1 style={{ fontSize: 24 }}>Watchtower Study</h1>
-      <p className="muted" style={{ marginTop: 4 }}>
-        {week ? <>Week of {week.weekStart}</> : 'No week configured yet.'}
-      </p>
+      <div className="page-head">
+        <span className="eyebrow">Weekend meeting</span>
+        <h1>Watchtower Study</h1>
+        <div className="head-row">
+          {week && <span className="week-chip"><CalendarDays size={13} /> {weekRange(week)}</span>}
+          {week && (
+            <a className="src-chip" href={week.watchtower.sourceUrl} target="_blank" rel="noreferrer">
+              Study article <ExternalLink size={11} />
+            </a>
+          )}
+        </div>
+      </div>
 
       {prepared ? (
         <>
-          <div className="card" style={{ marginTop: 16, borderLeft: '4px solid var(--green)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-              <span className="tag" style={{ background: 'rgba(62,107,79,0.14)', color: 'var(--green)' }}>Everything prepared ✓</span>
-              <span className="muted">All {prepared.wt.items.length} study questions answered for {prepared.weekStart}.</span>
-              <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
-                <button className="btn ghost" onClick={saveAll}>Save all</button>
-                <button className="btn ghost" onClick={() => { navigator.clipboard.writeText(allText).catch(() => {}) }}>Copy all</button>
-                <button className="btn ghost" onClick={() => window.print()}><Printer size={14} /> Print</button>
+          <div className="ready-banner">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span className="ready-check"><CheckCircle2 size={16} /></span>
+              <div>
+                <strong>Everything prepared</strong>
+                <span className="muted" style={{ display: 'block', fontSize: 11.5 }}>All {prepared.wt.items.length} questions answered · week {week ? weekRange(week) : prepared.weekStart}</span>
               </div>
             </div>
-            <p style={{ fontSize: 14.5, marginTop: 10 }}><strong>{prepared.wt.article}</strong></p>
-            <p className="muted" style={{ fontSize: 12.5 }}>Source: {prepared.wt.cite} · <a href={prepared.wt.sourceUrl} target="_blank" rel="noreferrer">official study article <ExternalLink size={10} /></a></p>
+            <p style={{ fontSize: 15, fontWeight: 700, margin: '10px 0 0', color: 'var(--navy)' }}>{prepared.wt.article}</p>
+            <p className="muted" style={{ fontSize: 11.5, marginTop: 3 }}>{prepared.wt.cite}</p>
+            <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+              <button className="btn ghost" style={{ flex: 1, justifyContent: 'center', padding: '9px 10px', fontSize: 12.5 }} onClick={saveAll}>Save all</button>
+              <button className="btn ghost" style={{ flex: 1, justifyContent: 'center', padding: '9px 10px', fontSize: 12.5 }} onClick={() => { navigator.clipboard.writeText(allText).catch(() => {}) }}>Copy all</button>
+              <button className="btn ghost" style={{ flex: 1, justifyContent: 'center', padding: '9px 10px', fontSize: 12.5 }} onClick={() => window.print()}><Printer size={13} /> Print</button>
+            </div>
           </div>
 
           {prepared.wt.items.map((it) => <WTItem key={it.num} it={it} />)}

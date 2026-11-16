@@ -18,36 +18,57 @@ import Onboarding from './pages/Onboarding'
 import ProfileSetup from './pages/ProfileSetup'
 
 /* bump this with every release — triggers the in-app update dialog */
-export const APP_VERSION = '2.2.0'
+export const APP_VERSION = '2.3.0'
 
-/* ---------- themes ---------- */
+/* ---------- themes: each family has a light and a dark mode ---------- */
 export const THEMES = [
-  { id: 'light', name: 'Classic', sw: 'linear-gradient(135deg,#f7f3ea 60%,#e8a13d)' },
-  { id: 'dark', name: 'Midnight', sw: 'linear-gradient(135deg,#13161e 60%,#e8a13d)' },
-  { id: 'ocean', name: 'Ocean', sw: 'linear-gradient(135deg,#edf6fa 60%,#2a9db5)' },
-  { id: 'forest', name: 'Forest', sw: 'linear-gradient(135deg,#f2f6ee 60%,#4c9d6f)' },
-  { id: 'rose', name: 'Rose', sw: 'linear-gradient(135deg,#fbf2f5 60%,#d4577e)' },
-  { id: 'sunset', name: 'Sunset', sw: 'linear-gradient(135deg,#211627 60%,#f2704a)' },
-  { id: 'lavender', name: 'Lavender', sw: 'linear-gradient(135deg,#f4f1fd 60%,#7c5cd6)' },
-  { id: 'mono', name: 'Mono', sw: 'linear-gradient(135deg,#f7f7f7 60%,#1b1b1b)' },
+  { id: 'classic', name: 'Classic', sw: 'linear-gradient(135deg,#f7f3ea 50%,#13161e 50%)' },
+  { id: 'ocean', name: 'Ocean', sw: 'linear-gradient(135deg,#edf6fa 50%,#0e2731 50%)' },
+  { id: 'forest', name: 'Forest', sw: 'linear-gradient(135deg,#f2f6ee 50%,#12231a 50%)' },
+  { id: 'rose', name: 'Rose', sw: 'linear-gradient(135deg,#fbf2f5 50%,#2a1520 50%)' },
+  { id: 'sunset', name: 'Sunset', sw: 'linear-gradient(135deg,#fdf1ea 50%,#211627 50%)' },
+  { id: 'lavender', name: 'Lavender', sw: 'linear-gradient(135deg,#f4f1fd 50%,#1b1530 50%)' },
+  { id: 'mono', name: 'Mono', sw: 'linear-gradient(135deg,#f7f7f7 50%,#111111 50%)' },
 ]
 
-const ThemeContext = createContext<{ theme: string; setTheme: (t: string) => void }>({ theme: 'light', setTheme: () => {} })
+const LEGACY: Record<string, { theme: string; mode: string }> = {
+  light: { theme: 'classic', mode: 'light' },
+  dark: { theme: 'classic', mode: 'dark' },
+  sunset: { theme: 'sunset', mode: 'dark' },
+}
+
+const ThemeContext = createContext<{
+  theme: string; mode: string;
+  setTheme: (t: string) => void; setMode: (m: string) => void;
+}>({ theme: 'classic', mode: 'light', setTheme: () => {}, setMode: () => {} })
 export const useTheme = () => useContext(ThemeContext)
 
 function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState(() => localStorage.getItem('jwtalk_theme') ?? 'light')
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme)
-    localStorage.setItem('jwtalk_theme', theme)
-    const meta = document.querySelector('meta[name="theme-color"]')
-    if (meta) {
-      const dark = ['dark', 'sunset'].includes(theme)
-      meta.setAttribute('content', dark ? '#171a24' : '#f7f3ea')
+  const [state, setState] = useState(() => {
+    const raw = localStorage.getItem('jwtalk_theme') ?? 'classic'
+    const mode = localStorage.getItem('jwtalk_mode')
+    if (mode) return { theme: raw, mode }
+    const legacy = LEGACY[raw]
+    if (legacy) {
+      localStorage.setItem('jwtalk_theme', legacy.theme)
+      localStorage.setItem('jwtalk_mode', legacy.mode)
+      return legacy
     }
-  }, [theme])
-  const setTheme = (t: string) => setThemeState(t)
-  return <ThemeContext.Provider value={{ theme, setTheme }}>{children}</ThemeContext.Provider>
+    localStorage.setItem('jwtalk_theme', raw)
+    localStorage.setItem('jwtalk_mode', 'light')
+    return { theme: raw, mode: 'light' }
+  })
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', state.theme)
+    document.documentElement.setAttribute('data-mode', state.mode)
+    localStorage.setItem('jwtalk_theme', state.theme)
+    localStorage.setItem('jwtalk_mode', state.mode)
+    const meta = document.querySelector('meta[name="theme-color"]')
+    if (meta) meta.setAttribute('content', state.mode === 'dark' ? '#171a24' : '#f7f3ea')
+  }, [state])
+  const setTheme = (t: string) => setState((s) => ({ ...s, theme: t }))
+  const setMode = (m: string) => setState((s) => ({ ...s, mode: m }))
+  return <ThemeContext.Provider value={{ ...state, setTheme, setMode }}>{children}</ThemeContext.Provider>
 }
 
 /* ---------- navigation model ---------- */
@@ -142,7 +163,7 @@ function UpdateDialog() {
         <button className="upd-close" onClick={() => setShow(false)} aria-label="Later"><X size={15} /></button>
         <div className="brand-logo upd-ico"><RefreshCw size={20} /></div>
         <h3>Update available</h3>
-        <p className="muted">A new version of JW Study Assistant (v{APP_VERSION}) is ready. Refresh to apply the latest changes and prepared study.</p>
+        <p className="muted">A new version of JW Study Assistant (v{APP_VERSION}) is ready. Your saved data is kept — refreshing only loads the new app.</p>
         <button className="btn primary" style={{ width: '100%', marginTop: 14 }} onClick={apply}>Refresh now</button>
         <button className="btn ghost" style={{ width: '100%', marginTop: 8 }} onClick={() => setShow(false)}>Later</button>
       </div>
@@ -151,7 +172,7 @@ function UpdateDialog() {
 }
 
 function Shell() {
-  const { theme, setTheme } = useTheme()
+  const { mode, setMode } = useTheme()
   const [moreOpen, setMoreOpen] = useState(false)
   const bottomItems = NAV.filter((n) => n.primary)
   return (
@@ -169,8 +190,8 @@ function Shell() {
           </NavLink>
         ))}
         <div style={{ marginTop: 'auto', padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <button className="btn ghost" style={{ justifyContent: 'flex-start', padding: '8px 12px' }} onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
-            {theme === 'light' ? <Moon size={15} /> : <Sun size={15} />} {theme === 'light' ? 'Dark mode' : 'Light mode'}
+          <button className="btn ghost" style={{ justifyContent: 'flex-start', padding: '8px 12px' }} onClick={() => setMode(mode === 'light' ? 'dark' : 'light')}>
+            {mode === 'light' ? <Moon size={15} /> : <Sun size={15} />} {mode === 'light' ? 'Dark mode' : 'Light mode'}
           </button>
           <div className="foot" style={{ padding: 0 }}>Personal study tool · not affiliated with JW.ORG</div>
         </div>
@@ -181,8 +202,8 @@ function Shell() {
         <header className="topbar">
           <Brand />
           <div style={{ flex: 1 }} />
-          <button className="btn ghost" style={{ padding: '8px 10px' }} onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} aria-label="Toggle theme">
-            {theme === 'light' ? <Moon size={17} /> : <Sun size={17} />}
+          <button className="btn ghost" style={{ padding: '8px 10px' }} onClick={() => setMode(mode === 'light' ? 'dark' : 'light')} aria-label="Toggle dark mode">
+            {mode === 'light' ? <Moon size={17} /> : <Sun size={17} />}
           </button>
         </header>
 

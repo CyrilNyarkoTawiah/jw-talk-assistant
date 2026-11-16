@@ -33,10 +33,7 @@ export default function Onboarding({ onDone }: { onDone: () => void }) {
       <div className="slide" key={i}>
         <div className="brand" style={{ display: 'flex', alignItems: 'center', gap: 10, position: 'absolute', top: 'calc(18px + env(safe-area-inset-top))', left: 26 }}>
           <div className="brand-logo"><BookOpenCheck size={17} /></div>
-          <div>
-            <div className="brand-name">JW Study Assistant</div>
-            <div className="brand-sub">Meeting & talk preparation</div>
-          </div>
+          <div className="brand-name">JW Study Assistant</div>
         </div>
         <div className="illus" style={{ background: s.color }}><s.ico size={84} strokeWidth={1.4} /></div>
         <h2>{s.title}</h2>

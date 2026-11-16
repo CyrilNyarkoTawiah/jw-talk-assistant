@@ -84,6 +84,8 @@ h1, h2, h3 { letter-spacing: -0.015em; }
   border-right: 1px solid var(--line); background: transparent;
 }
 .sidebar .brand { display: flex; align-items: center; gap: 10px; padding: 0 12px 20px; }
+.topbar .brand, .onboard .brand { display: flex; align-items: center; gap: 10px; }
+.topbar .brand-name, .onboard .brand-name { font-weight: 800; font-size: 16px; line-height: 1.15; }
 .sidebar .brand-logo {
   width: 38px; height: 38px; border-radius: 13px; background: var(--accent-grad);
   display: grid; place-items: center; color: #fff; font-size: 19px;
@@ -439,7 +441,6 @@ select { appearance: none; background-image: linear-gradient(45deg, transparent 
   position: relative;
 }
 @keyframes brandShimmer { 0% { background-position: 130% 0; } 100% { background-position: -130% 0; } }
-.spark { position: absolute; right: -13px; top: -3px; font-size: 10px; -webkit-text-fill-color: var(--accent); color: var(--accent); animation: sparkPop 2.4s ease-in-out infinite; display: inline-block; }
 @keyframes sparkPop { 0%, 100% { opacity: 0.2; transform: scale(0.65) rotate(0deg); } 50% { opacity: 1; transform: scale(1.2) rotate(14deg); } }
 
 /* dialogue speakers */

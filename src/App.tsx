@@ -59,14 +59,11 @@ const NAV = [
   { to: '/settings', label: 'Settings', icon: SettingsIcon, desktop: true, more: true },
 ]
 
-function Brand({ compact }: { compact?: boolean }) {
+function Brand() {
   return (
     <div className="brand">
-      <div className="brand-logo"><BookOpenCheck size={compact ? 17 : 20} /></div>
-      <div>
-        <div className="brand-name">JW Study Assistant<span className="spark" aria-hidden>\u2726</span></div>
-        <div className="brand-sub">Meeting & talk preparation</div>
-      </div>
+      <div className="brand-logo"><BookOpenCheck size={21} /></div>
+      <div className="brand-name">JW Study Assistant</div>
     </div>
   )
 }

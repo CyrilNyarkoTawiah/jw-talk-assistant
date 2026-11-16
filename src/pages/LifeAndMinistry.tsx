@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { currentWeek, JW_LINKS, useLibrary } from '../lib/app'
+import { currentWeek, JW_LINKS, useLibrary, weekRange } from '../lib/app'
 import { preparedCurrent, type PreparedLMItem } from '../lib/prepared'
 import { buildStudyPrompt, buildGemsPrompt, askAi, SYSTEM_INSTRUCTIONS } from '../lib/ai'
-import { Copy, Check, ExternalLink, Sparkles, Printer, Share2 } from 'lucide-react'
+import { Copy, Check, ExternalLink, Sparkles, Printer, Share2, CheckCircle2, CalendarDays } from 'lucide-react'
 
 const STYLES = [
   'Short comment (15-25 seconds)',
@@ -114,23 +114,33 @@ export default function LifeAndMinistry() {
 
   return (
     <div>
-      <h1 style={{ fontSize: 24 }}>Life and Ministry Meeting</h1>
-      <p className="muted" style={{ marginTop: 4 }}>
-        {week ? <>Week of {week.weekStart} · <a href={week.lifeAndMinistry.sourceUrl} target="_blank" rel="noreferrer">{week.lifeAndMinistry.publication} <ExternalLink size={11} /></a></> : 'No week configured yet.'}
-      </p>
+      <div className="page-head">
+        <span className="eyebrow">Midweek meeting</span>
+        <h1>Life &amp; Ministry Meeting</h1>
+        <div className="head-row">
+          {week && <span className="week-chip"><CalendarDays size={13} /> {weekRange(week)}</span>}
+          {week && (
+            <a className="src-chip" href={week.lifeAndMinistry.sourceUrl} target="_blank" rel="noreferrer">
+              Workbook <ExternalLink size={11} />
+            </a>
+          )}
+        </div>
+      </div>
 
       {prepared ? (
         <>
-          <div className="card" style={{ marginTop: 16, borderLeft: '4px solid var(--green)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-              <span className="tag" style={{ background: 'rgba(62,107,79,0.14)', color: 'var(--green)' }}>Everything prepared ✓</span>
-              <span className="muted">The complete programme for {prepared.weekStart} — every part has a ready answer below.</span>
-              <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
-                <button className="btn ghost" onClick={saveAll}>Save all to Library</button>
-                <button className="btn ghost" onClick={() => window.print()}><Printer size={14} /> Print</button>
+          <div className="ready-banner">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span className="ready-check"><CheckCircle2 size={16} /></span>
+              <div>
+                <strong>Everything prepared</strong>
+                <span className="muted" style={{ display: 'block', fontSize: 11.5 }}>Week {week ? weekRange(week) : prepared.weekStart} · every part answered below</span>
               </div>
             </div>
-            <p className="muted" style={{ marginTop: 8, fontSize: 12.5 }}>Source: {prepared.lm.cite} · <a href={prepared.lm.sourceUrl} target="_blank" rel="noreferrer">official workbook <ExternalLink size={10} /></a></p>
+            <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+              <button className="btn ghost" style={{ flex: 1, justifyContent: 'center', padding: '9px 10px', fontSize: 12.5 }} onClick={saveAll}>Save all</button>
+              <button className="btn ghost" style={{ flex: 1, justifyContent: 'center', padding: '9px 10px', fontSize: 12.5 }} onClick={() => window.print()}><Printer size={13} /> Print</button>
+            </div>
           </div>
 
           {prepared.lm.items.map((it) => (

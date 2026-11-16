@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { currentWeek, isCurrent, JW_LINKS, useLibrary, type WeekEntry } from '../lib/app'
+import { currentWeek, isCurrent, JW_LINKS, useLibrary, weekRange, type WeekEntry } from '../lib/app'
 import { useTheme } from '../App'
 import { preparedCurrent } from '../lib/prepared'
 import { BookOpen, Landmark, Mic2, Search, CalendarDays, ChevronRight, CheckCircle2, Quote, Library as LibraryIcon, MessageCircleQuestion, Bell, ExternalLink } from 'lucide-react'
@@ -52,33 +52,41 @@ export default function Home() {
     if (!q || askBusy) return
     setAskBusy(true); setAskErr(''); setAskResults(null)
     const url = 'https://wol.jw.org/en/wol/s/r1/lp-e?q=' + encodeURIComponent(q)
-    // 1) r.jina.ai reader (CORS-friendly, returns markdown)
-    try {
-      const c1 = new AbortController(); const k1 = setTimeout(() => c1.abort(), 20000)
-      const r1 = await fetch('https://r.jina.ai/' + url, { signal: c1.signal })
-      clearTimeout(k1)
-      if (r1.ok) {
-        const md = await r1.text()
-        const out: { title: string; href: string; pub: string }[] = []
-        const lines = md.split('\n')
-        for (let i = 0; i < lines.length && out.length < 8; i++) {
-          const m = lines[i].match(/^\*\s+\[([^\]]+)\]\((https:\/\/wol\.jw\.org\/en\/wol\/d\/r1\/lp-e\/\d+)\)\s*$/)
-          if (!m) continue
-          let pub = ''
-          for (let j = i + 1; j < Math.min(i + 5, lines.length); j++) {
-            if (lines[j].includes('](')) break
-            const pm = lines[j].match(/^\*\s+\*\s+(.+?)\s*$/)
-            if (pm) { pub = pm[1].trim(); break }
-          }
-          if (!out.some((o) => o.href === m[2])) out.push({ title: m[1].trim(), href: m[2], pub })
+    const parseMd = (md: string) => {
+      const out: { title: string; href: string; pub: string }[] = []
+      const arr = md.split('\n')
+      for (let i = 0; i < arr.length && out.length < 8; i++) {
+        const m = arr[i].match(/^\*\s+\[([^\]]+)\]\((https:\/\/wol\.jw\.org\/en\/wol\/d\/r1\/lp-e\/\d+)[^)]*\)/)
+        if (!m) continue
+        let pub = ''
+        for (let j = i + 1; j < Math.min(i + 5, arr.length); j++) {
+          if (arr[j].includes('](')) break
+          const pm = arr[j].match(/^\*\s+\*\s+([^*\[]+?)\s*$/)
+          if (pm) { pub = pm[1].trim(); break }
         }
-        if (out.length) { setAskResults(out); setAskBusy(false); return }
+        if (!out.some((o) => o.href === m[2])) out.push({ title: m[1].trim(), href: m[2], pub })
       }
-    } catch { /* fall through to proxies */ }
+      return out
+    }
+    const done = (out: { title: string; href: string; pub: string }[]) => {
+      try { localStorage.setItem('jwtalk_ask_cache', JSON.stringify({ out })) } catch { /* noop */ }
+      setAskResults(out); setAskBusy(false)
+    }
+    // 1) r.jina.ai reader (CORS-friendly markdown) — 2 attempts with backoff
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        if (attempt > 0) await new Promise((r) => setTimeout(r, 2500))
+        const c1 = new AbortController(); const k1 = setTimeout(() => c1.abort(), 20000)
+        const r1 = await fetch('https://r.jina.ai/' + url, { signal: c1.signal })
+        clearTimeout(k1)
+        if (!r1.ok) continue
+        const out = parseMd(await r1.text())
+        if (out.length) { done(out); return }
+      } catch { /* retry or fall through */ }
+    }
     // 2) HTML via CORS proxies (fallback)
     const proxies = [
       'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
-      'https://corsproxy.io/?url=' + encodeURIComponent(url),
       'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url),
     ]
     for (const purl of proxies) {
@@ -99,9 +107,19 @@ export default function Home() {
             out.push({ title: (a.textContent ?? '').trim(), href: 'https://wol.jw.org' + a.getAttribute('href'), pub: (pub?.textContent ?? '').trim() })
           }
         })
-        if (out.length) { setAskResults(out); setAskBusy(false); return }
+        if (out.length) { done(out); return }
       } catch { /* next proxy */ }
     }
+    // 3) last successful results from this device
+    try {
+      const cached = JSON.parse(localStorage.getItem('jwtalk_ask_cache') ?? 'null')
+      if (cached?.out?.length) {
+        setAskResults(cached.out as { title: string; href: string; pub: string }[])
+        setAskErr('Showing your last successful results — jw.org could not be reached just now.')
+        setAskBusy(false)
+        return
+      }
+    } catch { /* noop */ }
     setAskErr("Couldn't reach jw.org just now — check your connection and try again.")
     setAskBusy(false)
   }
@@ -147,7 +165,7 @@ export default function Home() {
       {/* this week's meetings */}
       <div className="rise d3" style={{ display: 'flex', alignItems: 'center', marginTop: 22, marginBottom: 10 }}>
         <h2 style={{ fontSize: 17, margin: 0 }}>This week’s meetings</h2>
-        {week && <span className="tag soft-navy" style={{ marginLeft: 'auto' }}>Week of {week.weekStart.slice(5)}</span>}
+        {week && <span className="tag soft-navy" style={{ marginLeft: 'auto' }}>Week {weekRange(week)}</span>}
       </div>
 
       {week && (

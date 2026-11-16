@@ -3,7 +3,7 @@ import { HashRouter, Routes, Route, NavLink } from 'react-router-dom'
 import {
   Home as HomeIcon, BookOpen, Landmark, Search, Mic2, CalendarDays,
   FolderOpen, Settings as SettingsIcon, Moon, Sun, Menu, BookOpenCheck,
-  Sparkles, Compass,
+  Compass, RefreshCw, X,
 } from 'lucide-react'
 import Home from './pages/Home'
 import LifeAndMinistry from './pages/LifeAndMinistry'
@@ -15,6 +15,10 @@ import Research from './pages/Research'
 import Library from './pages/Library'
 import SettingsPage from './pages/SettingsPage'
 import Onboarding from './pages/Onboarding'
+import ProfileSetup from './pages/ProfileSetup'
+
+/* bump this with every release — triggers the in-app update dialog */
+export const APP_VERSION = '2.2.0'
 
 /* ---------- themes ---------- */
 export const THEMES = [
@@ -91,6 +95,61 @@ function Sheet({ onClose }: { onClose: () => void }) {
   )
 }
 
+/* ---------- launch splash ---------- */
+function Splash({ onDone }: { onDone: () => void }) {
+  const [out, setOut] = useState(false)
+  useEffect(() => {
+    const t1 = setTimeout(() => setOut(true), 2150)
+    const t2 = setTimeout(onDone, 2750)
+    return () => { clearTimeout(t1); clearTimeout(t2) }
+  }, [])
+  return (
+    <div className={'splash' + (out ? ' out' : '')}>
+      <div className="splash-inner">
+        <div className="brand-logo big splash-logo"><BookOpenCheck size={34} /></div>
+        <div className="brand-name splash-name">JW Study Assistant</div>
+        <div className="splash-tag">Your Personal Study Assistant</div>
+      </div>
+    </div>
+  )
+}
+
+/* ---------- update dialog ---------- */
+function UpdateDialog() {
+  const [show, setShow] = useState(() => {
+    const prev = localStorage.getItem('jwtalk_app_ver')
+    return !!prev && prev !== APP_VERSION
+  })
+  const apply = async () => {
+    try {
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations()
+        regs.forEach((r) => r.unregister())
+      }
+      if ('caches' in window) {
+        const ks = await caches.keys()
+        ks.forEach((k) => caches.delete(k))
+      }
+    } catch { /* ignore */ }
+    localStorage.setItem('jwtalk_app_ver', APP_VERSION)
+    location.reload()
+  }
+  if (!show) return null
+  return (
+    <>
+      <div className="sheet-backdrop" />
+      <div className="update-dialog">
+        <button className="upd-close" onClick={() => setShow(false)} aria-label="Later"><X size={15} /></button>
+        <div className="brand-logo upd-ico"><RefreshCw size={20} /></div>
+        <h3>Update available</h3>
+        <p className="muted">A new version of JW Study Assistant (v{APP_VERSION}) is ready. Refresh to apply the latest changes and prepared study.</p>
+        <button className="btn primary" style={{ width: '100%', marginTop: 14 }} onClick={apply}>Refresh now</button>
+        <button className="btn ghost" style={{ width: '100%', marginTop: 8 }} onClick={() => setShow(false)}>Later</button>
+      </div>
+    </>
+  )
+}
+
 function Shell() {
   const { theme, setTheme } = useTheme()
   const [moreOpen, setMoreOpen] = useState(false)
@@ -159,6 +218,7 @@ function Shell() {
         </button>
       </nav>
       {moreOpen && <Sheet onClose={() => setMoreOpen(false)} />}
+      <UpdateDialog />
     </div>
   )
 }
@@ -169,10 +229,19 @@ function Page({ children }: { children: React.ReactNode }) {
 }
 
 function AppInner() {
-  const [showOnboard, setShowOnboard] = useState(() => !localStorage.getItem('jwtalk_onboarded'))
+  const [splash, setSplash] = useState(true)
+  const [profileDone, setProfileDone] = useState(() => !!localStorage.getItem('jwtalk_profile_done'))
+  const [showOnboard, setShowOnboard] = useState(() => !!localStorage.getItem('jwtalk_profile_done') && !localStorage.getItem('jwtalk_onboarded'))
   return (
     <>
-      {showOnboard && <Onboarding onDone={() => { localStorage.setItem('jwtalk_onboarded', '1'); setShowOnboard(false) }} />}
+      {splash && <Splash onDone={() => setSplash(false)} />}
+      {!profileDone && (
+        <ProfileSetup onDone={() => {
+          setProfileDone(true)
+          setShowOnboard(!localStorage.getItem('jwtalk_onboarded'))
+        }} />
+      )}
+      {profileDone && showOnboard && <Onboarding onDone={() => { localStorage.setItem('jwtalk_onboarded', '1'); setShowOnboard(false) }} />}
       <Shell />
     </>
   )

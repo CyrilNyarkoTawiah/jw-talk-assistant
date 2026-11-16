@@ -85,3 +85,12 @@ export function useLibrary<T extends LibraryItem = LibraryItem>() {
   const remove = (id: string) => save(items.filter((x) => x.id !== id))
   return { items, add, remove, save }
 }
+
+export function weekRange(w: { weekStart: string; weekEnd: string }): string {
+  const M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  const [sy, sm, sd] = w.weekStart.split('-').map(Number)
+  const [ey, em, ed] = w.weekEnd.split('-').map(Number)
+  const a = `${sd} ${M[sm - 1]}`
+  const b = `${ed} ${M[em - 1]}`
+  return sy === ey ? `${a} – ${b} ${ey}` : `${a} ${sy} – ${b} ${ey}`
+}

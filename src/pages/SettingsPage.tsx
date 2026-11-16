@@ -22,6 +22,20 @@ export default function SettingsPage() {
       <h1 style={{ fontSize: 24 }}>Settings</h1>
 
       <div className="card" style={{ marginTop: 16 }}>
+        <span className="tag">Your profile</span>
+        <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center' }}>
+          <input
+            defaultValue={localStorage.getItem('jwtalk_user') ?? ''}
+            maxLength={24}
+            placeholder="Your name…"
+            style={{ flex: 1 }}
+            onChange={(e) => { const n = e.target.value.trim(); if (n) localStorage.setItem('jwtalk_user', n) }}
+          />
+        </div>
+        <p className="muted" style={{ fontSize: 11.5, marginTop: 8 }}>Used to greet you on the home screen.</p>
+      </div>
+
+      <div className="card" style={{ marginTop: 16 }}>
         <span className="tag">Appearance</span>
         <div className="themes-grid">
           {THEMES.map((t) => (

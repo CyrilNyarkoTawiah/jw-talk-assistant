@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "note": "Manually maintained weekly content registry. Links point to official JW.ORG / WOL pages; no publication text is stored here. Update weekly via the administrator section in Settings, or by editing this file.",
+  "weeks": [
+    {
+      "weekStart": "2026-11-16",
+      "weekEnd": "2026-11-22",
+      "language": "en",
+      "lifeAndMinistry": {
+        "publication": "Our Christian Life and Ministry Meeting Workbook — November 2026",
+        "sourceUrl": "https://wol.jw.org/en/wol/d/r1/lp-e/1102026210",
+        "sections": ["Treasures From God's Word", "Apply Yourself to the Field Ministry", "Living as Christians", "Bible Reading"]
+      },
+      "watchtower": {
+        "publication": "The Watchtower (Study Edition)",
+        "articleTitle": "November 16-22 study week",
+        "studyDate": "",
+        "sourceUrl": "https://wol.jw.org/en/wol/d/r1/lp-e/202026403"
+      },
+      "meetingsHub": "https://wol.jw.org/en/wol/meetings/r1/lp-e",
+      "dailyText": "https://wol.jw.org/en/wol/dt/r1/lp-e"
+    }
+  ]
+}

@@ -1,6 +1,9 @@
 /* Release notes shown in the in-app update dialog — key = APP_VERSION.
    The weekly prep job must add an entry here whenever it bumps the version. */
 export const RELEASE_NOTES: Record<string, string[]> = {
+  '2.4.2': [
+    'New app icon — now the same gold book-and-check logo you see in the app's corner',
+  ],
   '2.4.1': [
     'Apply Yourself assignments now demonstrated around their LMD lesson points',
     'Elegant link styling — no underlines until hover',

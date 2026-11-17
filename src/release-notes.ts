@@ -1,6 +1,9 @@
 /* Release notes shown in the in-app update dialog — key = APP_VERSION.
    The weekly prep job must add an entry here whenever it bumps the version. */
 export const RELEASE_NOTES: Record<string, string[]> = {
+  '2.4.3': [
+    'Congregation Bible Study: prepared answers to every question in the chapter (Dig Deeper, Reflect, Meditate)',
+  ],
   '2.4.2': [
     'New app icon — now the same gold book-and-check logo from the app corner',
   ],

@@ -9,9 +9,11 @@ export interface PreparedWTItem {
   num: string; q: string; paras: string; comment: string
   scriptures: PreparedScripture[]; insight?: string; apply?: string
 }
+export interface PreparedCBSItem { label: string; q: string; answer: string; scriptures: PreparedScripture[] }
 export interface PreparedLMItem {
   num: string; title: string; mins: string; kind: string
   answer: string; scriptures: PreparedScripture[]; cite: string
+  cbs?: PreparedCBSItem[]
 }
 export interface Prepared {
   weekStart: string

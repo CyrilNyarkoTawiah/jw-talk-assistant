@@ -643,3 +643,14 @@ select { appearance: none; background-image: linear-gradient(45deg, transparent 
   text-align: center; font-size: 11px; font-weight: 700; letter-spacing: 0.16em;
   text-transform: uppercase; color: color-mix(in srgb, var(--muted) 65%, transparent);
 }
+
+/* ---------- congregation bible study guide ---------- */
+.cbs-guide { margin-top: 12px; display: flex; flex-direction: column; gap: 10px; }
+.cbs-item { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 13px; }
+.cbs-label {
+  display: inline-block; font-size: 10px; font-weight: 800; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--accent-deep);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border-radius: 999px; padding: 3px 10px; margin-bottom: 6px;
+}
+.cbs-q { font-weight: 800; font-size: 13.5px; margin: 4px 0 6px; color: var(--navy); line-height: 1.4; }

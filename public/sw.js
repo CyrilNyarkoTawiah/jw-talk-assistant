@@ -12,10 +12,28 @@ self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(CORE)).then(() => self.skipWaiting()))
 })
 
+const verOf = (k) => k.replace(/^jwtalk-v/, '')
+const cmpVer = (a, b) => {
+  const pa = a.split('.').map(Number)
+  const pb = b.split('.').map(Number)
+  return (pa[0] - pb[0]) || (pa[1] - pb[1]) || (pa[2] - pb[2])
+}
+
 self.addEventListener('activate', (e) => {
-  e.waitUntil(
-    caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim()),
-  )
+  e.waitUntil((async () => {
+    // Keep the current cache AND the most recent previous generation: a page
+    // still loading from the old shell must never hit a purged asset (this is
+    // what made the installed app go blank after an update). Older generations
+    // are cleaned here; the previous one is removed on the NEXT activation.
+    const keys = await caches.keys()
+    const others = keys
+      .filter((k) => k !== CACHE && /^jwtalk-v/.test(k))
+      .sort((a, b) => cmpVer(verOf(b), verOf(a)))
+    const doomed = others.slice(1)
+      .concat(keys.filter((k) => k !== CACHE && !/^jwtalk-v/.test(k)))
+    await Promise.all(doomed.map((k) => caches.delete(k)))
+    await self.clients.claim()
+  })())
 })
 
 self.addEventListener('fetch', (e) => {

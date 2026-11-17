@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { currentWeek, JW_LINKS, useLibrary, weekRange } from '../lib/app'
-import { preparedCurrent, type PreparedLMItem } from '../lib/prepared'
+import { preparedCurrent, type PreparedLMItem, type PreparedPicture } from '../lib/prepared'
 import { buildStudyPrompt, buildGemsPrompt, askAi, SYSTEM_INSTRUCTIONS } from '../lib/ai'
-import { Copy, Check, ExternalLink, Sparkles, Printer, Share2, CheckCircle2, CalendarDays } from 'lucide-react'
+import { Copy, Check, ExternalLink, Sparkles, Printer, Share2, CheckCircle2, CalendarDays, ImageIcon } from 'lucide-react'
 
 const STYLES = [
   'Short comment (15-25 seconds)',
@@ -44,6 +44,28 @@ function AnswerBody({ text }: { text: string }) {
         )
       })}
     </p>
+  )
+}
+
+function PictureCard({ pic }: { pic: PreparedPicture }) {
+  const [broken, setBroken] = useState(false)
+  if (broken) {
+    return (
+      <figure className="l6-pic l6-pic-fallback">
+        <div style={{ padding: '18px 14px 10px' }}>
+          <ImageIcon size={22} style={{ color: 'var(--accent-deep)' }} />
+          <p style={{ fontSize: 13.5, margin: '8px 0 2px', fontWeight: 700 }}>{pic.alt}</p>
+          <a href={pic.url} target="_blank" rel="noreferrer" style={{ fontSize: 12.5 }}>Open the picture on wol.jw.org</a>
+        </div>
+        <figcaption>{pic.cite}</figcaption>
+      </figure>
+    )
+  }
+  return (
+    <figure className="l6-pic">
+      <img src={pic.url} alt={pic.alt} loading="lazy" onError={() => setBroken(true)} />
+      <figcaption>{pic.cite}</figcaption>
+    </figure>
   )
 }
 
@@ -148,12 +170,7 @@ export default function LifeAndMinistry() {
               <span className="tag">{kindLabel[it.kind] ?? it.kind}</span>
               <h3 style={{ fontSize: 15.5, margin: '8px 0 2px' }}>{it.num}. {it.title} <span className="muted">({it.mins} min.)</span></h3>
               <AnswerBody text={it.answer} />
-              {it.picture && (
-                <figure className="l6-pic">
-                  <img src={it.picture.url} alt={it.picture.alt} loading="lazy" />
-                  <figcaption>{it.picture.cite}</figcaption>
-                </figure>
-              )}
+              {it.picture && <PictureCard pic={it.picture} />}
               {it.pictureQuestions && it.pictureQuestions.length > 0 && (
                 <div className="cbs-guide">
                   {it.pictureQuestions.map((c) => (

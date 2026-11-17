@@ -10,10 +10,13 @@ export interface PreparedWTItem {
   scriptures: PreparedScripture[]; insight?: string; apply?: string
 }
 export interface PreparedCBSItem { label: string; q: string; answer: string; scriptures: PreparedScripture[] }
+export interface PreparedPicture { url: string; alt: string; cite: string }
 export interface PreparedLMItem {
   num: string; title: string; mins: string; kind: string
   answer: string; scriptures: PreparedScripture[]; cite: string
   cbs?: PreparedCBSItem[]
+  picture?: PreparedPicture
+  pictureQuestions?: PreparedCBSItem[]
 }
 export interface Prepared {
   weekStart: string

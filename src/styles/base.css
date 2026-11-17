@@ -654,3 +654,8 @@ select { appearance: none; background-image: linear-gradient(45deg, transparent 
   border-radius: 999px; padding: 3px 10px; margin-bottom: 6px;
 }
 .cbs-q { font-weight: 800; font-size: 13.5px; margin: 4px 0 6px; color: var(--navy); line-height: 1.4; }
+
+/* ---------- field ministry picture discussions (item 6 "What Would You Say?") ---------- */
+.l6-pic { margin: 12px 0 4px; border-radius: 16px; overflow: hidden; border: 1px solid var(--line); background: var(--card); }
+.l6-pic img { width: 100%; display: block; }
+.l6-pic figcaption { font-size: 10.5px; color: var(--text-muted); padding: 7px 11px 9px; letter-spacing: 0.04em; }

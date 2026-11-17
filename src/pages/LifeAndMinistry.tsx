@@ -148,6 +148,28 @@ export default function LifeAndMinistry() {
               <span className="tag">{kindLabel[it.kind] ?? it.kind}</span>
               <h3 style={{ fontSize: 15.5, margin: '8px 0 2px' }}>{it.num}. {it.title} <span className="muted">({it.mins} min.)</span></h3>
               <AnswerBody text={it.answer} />
+              {it.picture && (
+                <figure className="l6-pic">
+                  <img src={it.picture.url} alt={it.picture.alt} loading="lazy" />
+                  <figcaption>{it.picture.cite}</figcaption>
+                </figure>
+              )}
+              {it.pictureQuestions && it.pictureQuestions.length > 0 && (
+                <div className="cbs-guide">
+                  {it.pictureQuestions.map((c) => (
+                    <div className="cbs-item" key={c.label}>
+                      <span className="cbs-label">{c.label}</span>
+                      <p className="cbs-q">{c.q}</p>
+                      <AnswerBody text={c.answer} />
+                      {c.scriptures.map((s) => (
+                        <p key={s.ref} className="quote">
+                          <strong style={{ color: 'var(--gold-deep)' }}>{s.ref}</strong> — “{s.quote}”
+                        </p>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              )}
               {it.cbs && it.cbs.length > 0 && (
                 <div className="cbs-guide">
                   {it.cbs.map((c) => (

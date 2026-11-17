@@ -1,6 +1,9 @@
 /* Release notes shown in the in-app update dialog — key = APP_VERSION.
    The weekly prep job must add an entry here whenever it bumps the version. */
 export const RELEASE_NOTES: Record<string, string[]> = {
+  '2.4.5': [
+    'Assignment 6 discussions now show the workbook picture with answers to the questions beneath it',
+  ],
   '2.4.4': [
     'Fix: the installed app could go blank right after an update — smoother update handling',
   ],

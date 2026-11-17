@@ -19,7 +19,7 @@ import ProfileSetup from './pages/ProfileSetup'
 import { RELEASE_NOTES } from './release-notes'
 
 /* bump this with every release — triggers the in-app update dialog */
-export const APP_VERSION = '2.4.0'
+export const APP_VERSION = '2.4.1'
 
 /* ---------- themes: each family has a light and a dark mode ---------- */
 export const THEMES = [
@@ -285,7 +285,12 @@ function Shell() {
 
 /* page transition wrapper */
 function Page({ children }: { children: React.ReactNode }) {
-  return <div className="page-enter" key={location.pathname}>{children}</div>
+  return (
+    <div className="page-enter" key={location.pathname}>
+      {children}
+      <footer className="credit">Built by C.N.T</footer>
+    </div>
+  )
 }
 
 function AppInner() {

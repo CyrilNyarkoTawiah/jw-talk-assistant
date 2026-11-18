@@ -19,7 +19,7 @@ import ProfileSetup from './pages/ProfileSetup'
 import { RELEASE_NOTES } from './release-notes'
 
 /* bump this with every release — triggers the in-app update dialog */
-export const APP_VERSION = '2.6.2'
+export const APP_VERSION = '2.6.3'
 
 /* ---------- themes: each family has a light and a dark mode ---------- */
 export const THEMES = [
@@ -296,18 +296,20 @@ if ('scrollRestoration' in window.history) window.history.scrollRestoration = 'm
 function ScrollKeeper() {
   const location = useLocation()
   useEffect(() => {
-    // track the scroll position continuously while THIS page is open —
-    // reading it at leave-time is too late: the next page's shorter content
-    // clamps window.scrollY before we get to read it.
-    const onScroll = () => { scrollMemory[location.pathname] = window.scrollY }
-    window.addEventListener('scroll', onScroll, { passive: true })
-    onScroll()
     const y = SCROLL_REMEMBER.includes(location.pathname) ? (scrollMemory[location.pathname] ?? 0) : 0
     window.scrollTo(0, y)
     // re-assert after the browser's own late adjustments
     requestAnimationFrame(() => window.scrollTo(0, y))
-    const t = window.setTimeout(() => window.scrollTo(0, y), 80)
-    return () => { window.removeEventListener('scroll', onScroll); window.clearTimeout(t) }
+    const settle = window.setTimeout(() => window.scrollTo(0, y), 90)
+    // track user scrolls only AFTER the restore settles, so the programmatic
+    // restore scroll never overwrites the saved position
+    const onScroll = () => { scrollMemory[location.pathname] = window.scrollY }
+    const track = window.setTimeout(() => window.addEventListener('scroll', onScroll, { passive: true }), 90)
+    return () => {
+      window.clearTimeout(settle)
+      window.clearTimeout(track)
+      window.removeEventListener('scroll', onScroll)
+    }
   }, [location.pathname])
   return null
 }

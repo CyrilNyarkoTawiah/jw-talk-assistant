@@ -1,6 +1,9 @@
 /* Release notes shown in the in-app update dialog — key = APP_VERSION.
    The weekly prep job must add an entry here whenever it bumps the version. */
 export const RELEASE_NOTES: Record<string, string[]> = {
+  '2.6.3': [
+    'Scroll memory refined — exact position, every time',
+  ],
   '2.6.2': [
     'Scroll memory fix — now returns to the exact spot you left',
   ],

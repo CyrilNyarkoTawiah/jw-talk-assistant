@@ -674,8 +674,8 @@ select { appearance: none; background-image: linear-gradient(45deg, transparent 
   font-size: 14.5px; font-weight: 800; letter-spacing: 0.07em;
   text-transform: uppercase; color: var(--foreground); margin: 0; flex: none;
 }
-.lm-seg::after { content: ''; flex: 1; height: 2px; border-radius: 2px; background: linear-gradient(90deg, var(--segsoft), transparent); }
-.lm-sec .card { border-top: 2px solid var(--segsoft); }
+.lm-seg::after { content: ''; flex: 1; min-width: 22px; height: 2px; border-radius: 2px; margin-left: 6px; background: linear-gradient(90deg, var(--segsoft), transparent); }
+.lm-sec .card { border-top: 3px solid color-mix(in srgb, var(--seg) 72%, transparent); border-top-left-radius: 6px; }
 
 /* ---------- watchtower paragraph notes ---------- */
 .para-notes { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }

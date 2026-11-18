@@ -1,6 +1,9 @@
 /* Release notes shown in the in-app update dialog — key = APP_VERSION.
    The weekly prep job must add an entry here whenever it bumps the version. */
 export const RELEASE_NOTES: Record<string, string[]> = {
+  '2.5.2': [
+    'Cleaner Life & Ministry sections — stronger colour separation, no repeated labels',
+  ],
   '2.5.1': [
     'Life & Ministry part headers now carry their official symbols (treasure, megaphone, people) with larger, clearer headers',
   ],

@@ -184,7 +184,7 @@ export default function LifeAndMinistry() {
                 </div>
                 {items.map((it) => (
             <div className="card" key={it.num} style={{ marginTop: 12 }}>
-              <span className="tag">{kindLabel[it.kind] ?? it.kind}</span>
+              {it.kind !== 'treasures' && it.kind !== 'apply' && it.kind !== 'living' && <span className="tag">{kindLabel[it.kind] ?? it.kind}</span>}
               <h3 style={{ fontSize: 15.5, margin: '8px 0 2px' }}>{it.num}. {it.title} <span className="muted">({it.mins} min.)</span></h3>
               <AnswerBody text={it.answer} />
               {it.picture && <PictureCard pic={it.picture} />}

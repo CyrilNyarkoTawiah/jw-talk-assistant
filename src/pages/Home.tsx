@@ -37,9 +37,9 @@ export default function Home() {
     if (refreshing) return
     setRefreshing(true); setRefreshErr('')
     try {
-      const r = await fetch('https://r.jina.ai/https://www.jw.org/en/news/', { headers: { 'X-Return-Format': 'html' } })
+      const r = await fetch('https://r.jina.ai/https://www.jw.org/en/news/')
       if (!r.ok) throw new Error('HTTP ' + r.status)
-      const items = parseNewsHtml(await r.text())
+      const items = parseNewsMd(await r.text())
       if (items.length < 3) throw new Error('unreadable')
       setNewsItems(items)
       localStorage.setItem('jwtalk_news_cache', JSON.stringify({ fetchedAt: new Date().toISOString(), items }))
@@ -113,31 +113,32 @@ function fmtNewsDate(iso: string): string {
   } catch { return iso }
 }
 
-/* same parsing the build-time fetcher uses — runs in the browser for in-app refresh */
-function parseNewsHtml(html: string): NewsItem[] {
-  const text = (s: string) => s.replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim()
-  const chunks = html.split(/<div class="synopsis/)
-  const byUrl = new Map<string, NewsItem>()
-  for (const c of chunks) {
-    if (!c.includes('pubDate')) continue
-    const urlM = c.match(/href="(\/en\/news\/region\/[a-z]+\/[a-zA-Z0-9-]+)\/"/)
-    const dateM = c.match(/class="meta pubDate">(\d{4}-\d{2}-\d{2})</)
-    const titleM = c.match(/<h3>\s*<a[^>]*>([\s\S]*?)<\/a>/)
-    if (!urlM || !dateM || !titleM) continue
-    const title = text(titleM[1])
-    if (!title || byUrl.has(urlM[1])) continue
-    byUrl.set(urlM[1], { title, url: 'https://www.jw.org' + urlM[1] + '/', date: dateM[1], teaser: '', img: '' })
-    const it = byUrl.get(urlM[1])!
-    const descM = c.match(/<p class="desc">([\s\S]*?)<\/p>/)
-    const imgM = c.match(/data-img-size-md='([^']+)'/)
-    if (descM) it.teaser = text(descM[1]).slice(0, 220)
-    if (imgM) it.img = imgM[1]
+/* runtime refresh: parse the markdown that r.jina.ai returns for the newsroom page
+   (each card: image link, optional ISO date, then "### [Title](article url)") */
+function parseNewsMd(md: string): NewsItem[] {
+  const items: NewsItem[] = []
+  const seen = new Set<string>()
+  const re = /### \[([^\]]{5,200})\]\((https:\/\/www\.jw\.org\/en\/news\/region\/[a-z]+\/[a-zA-Z0-9-]+\/?)\)/g
+  let m: RegExpExecArray | null
+  while ((m = re.exec(md)) !== null && items.length < 12) {
+    const url = m[2].endsWith('/') ? m[2] : m[2] + '/'
+    if (seen.has(url)) continue
+    seen.add(url)
+    const before = md.slice(Math.max(0, m.index - 1600), m.index)
+    const imgM = [...before.matchAll(/\]\((https:\/\/cms-imgp\.jw-cdn\.org\/img\/p\/\d+\/[^)]+)\)\]/g)]
+    const dateM = [...before.matchAll(/20[26]\d-\d{2}-\d{2}/g)]
+    items.push({
+      title: m[1].trim(),
+      url,
+      date: dateM.length ? dateM[dateM.length - 1][0] : '',
+      teaser: '',
+      img: imgM.length ? imgM[imgM.length - 1][1] : '',
+    })
   }
-  const items = [...byUrl.values()].slice(0, 12)
-  // prefer the wide 1200x600 image for each pub id; tile hides the img if it 404s
+  // upgrade to the wide 1200x600 image for each pub id; the tile hides the img if it 404s
   for (const it of items) {
-    const m = it.img.match(/\/img\/p\/(\d+)\//)
-    if (m) it.img = `https://cms-imgp.jw-cdn.org/img/p/${m[1]}/univ/art/${m[1]}_univ_lsr_lg.jpg`
+    const p = it.img.match(/\/img\/p\/(\d+)\//)
+    if (p) it.img = `https://cms-imgp.jw-cdn.org/img/p/${p[1]}/univ/art/${p[1]}_univ_lsr_lg.jpg`
   }
   return items
 }

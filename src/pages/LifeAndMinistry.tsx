@@ -137,9 +137,9 @@ export default function LifeAndMinistry() {
   // three meeting parts, colour-coded with tints derived from the theme accent,
   // each with a part symbol like the official workbook headers
   const SECTIONS = [
-    { title: 'Treasures from God’s Word', kinds: ['treasures', 'gems', 'reading'], tint: 'color-mix(in srgb, var(--accent) 62%, transparent)', Icon: Gem },
-    { title: 'Apply Yourself to the Field Ministry', kinds: ['apply'], tint: 'color-mix(in srgb, var(--accent) 38%, transparent)', Icon: Megaphone },
-    { title: 'Living as Christians', kinds: ['living'], tint: 'color-mix(in srgb, var(--accent) 18%, transparent)', Icon: Users },
+    { title: 'Treasures from God’s Word', kinds: ['treasures', 'gems', 'reading'], tint: 'color-mix(in srgb, var(--accent) 85%, transparent)', Icon: Gem },
+    { title: 'Apply Yourself to the Field Ministry', kinds: ['apply'], tint: 'color-mix(in srgb, var(--accent) 58%, transparent)', Icon: Megaphone },
+    { title: 'Living as Christians', kinds: ['living'], tint: 'color-mix(in srgb, var(--accent) 34%, transparent)', Icon: Users },
   ]
 
   return (

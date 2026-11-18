@@ -1,5 +1,5 @@
-import { createContext, useContext, useEffect, useState } from 'react'
-import { HashRouter, Routes, Route, NavLink } from 'react-router-dom'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
+import { HashRouter, Routes, Route, NavLink, useLocation } from 'react-router-dom'
 import {
   Home as HomeIcon, BookOpen, Landmark, Search, Mic2, CalendarDays,
   FolderOpen, Settings as SettingsIcon, Moon, Sun, Menu, BookOpenCheck,
@@ -19,7 +19,7 @@ import ProfileSetup from './pages/ProfileSetup'
 import { RELEASE_NOTES } from './release-notes'
 
 /* bump this with every release — triggers the in-app update dialog */
-export const APP_VERSION = '2.5.4'
+export const APP_VERSION = '2.6.0'
 
 /* ---------- themes: each family has a light and a dark mode ---------- */
 export const THEMES = [
@@ -216,6 +216,7 @@ function Shell() {
   const bottomItems = NAV.filter((n) => n.primary)
   return (
     <div className="shell">
+      <ScrollKeeper />
       <div className="bubbles" aria-hidden>
         {Array.from({ length: 7 }).map((_, i) => <span key={i} />)}
       </div>
@@ -281,6 +282,27 @@ function Shell() {
       <UpdateDialog />
     </div>
   )
+}
+
+/* scroll memory: L&M and Study remember where you were; every other page
+   opens at the top. Memory lives only while the app itself is running —
+   a full exit clears it. */
+const SCROLL_REMEMBER = ['/life-and-ministry', '/watchtower']
+const scrollMemory: Record<string, number> = {}
+
+function ScrollKeeper() {
+  const location = useLocation()
+  const prevPath = useRef(location.pathname)
+  useEffect(() => {
+    if ('scrollRestoration' in window.history) window.history.scrollRestoration = 'manual'
+    if (SCROLL_REMEMBER.includes(prevPath.current)) {
+      scrollMemory[prevPath.current] = window.scrollY
+    }
+    prevPath.current = location.pathname
+    const y = SCROLL_REMEMBER.includes(location.pathname) ? (scrollMemory[location.pathname] ?? 0) : 0
+    window.scrollTo(0, y)
+  }, [location.pathname])
+  return null
 }
 
 /* page transition wrapper */

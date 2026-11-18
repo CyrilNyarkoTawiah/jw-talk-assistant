@@ -1,6 +1,9 @@
 /* Release notes shown in the in-app update dialog — key = APP_VERSION.
    The weekly prep job must add an entry here whenever it bumps the version. */
 export const RELEASE_NOTES: Record<string, string[]> = {
+  '2.6.0': [
+    'Life & Ministry and the Watchtower Study now remember your scroll position when you switch pages',
+  ],
   '2.5.4': [
     'Reverted the section colour experiment — kept only the part symbols',
   ],

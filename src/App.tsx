@@ -19,7 +19,7 @@ import ProfileSetup from './pages/ProfileSetup'
 import { RELEASE_NOTES } from './release-notes'
 
 /* bump this with every release — triggers the in-app update dialog */
-export const APP_VERSION = '2.6.0'
+export const APP_VERSION = '2.6.1'
 
 /* ---------- themes: each family has a light and a dark mode ---------- */
 export const THEMES = [
@@ -290,17 +290,23 @@ function Shell() {
 const SCROLL_REMEMBER = ['/life-and-ministry', '/watchtower']
 const scrollMemory: Record<string, number> = {}
 
+/* take ownership of scroll restoration before the first navigation */
+if ('scrollRestoration' in window.history) window.history.scrollRestoration = 'manual'
+
 function ScrollKeeper() {
   const location = useLocation()
   const prevPath = useRef(location.pathname)
   useEffect(() => {
-    if ('scrollRestoration' in window.history) window.history.scrollRestoration = 'manual'
     if (SCROLL_REMEMBER.includes(prevPath.current)) {
       scrollMemory[prevPath.current] = window.scrollY
     }
     prevPath.current = location.pathname
     const y = SCROLL_REMEMBER.includes(location.pathname) ? (scrollMemory[location.pathname] ?? 0) : 0
     window.scrollTo(0, y)
+    // re-assert after the browser's own late adjustments and once content settles
+    requestAnimationFrame(() => window.scrollTo(0, y))
+    const t = window.setTimeout(() => window.scrollTo(0, y), 60)
+    return () => window.clearTimeout(t)
   }, [location.pathname])
   return null
 }

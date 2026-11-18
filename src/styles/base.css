@@ -692,7 +692,7 @@ select { appearance: none; background-image: linear-gradient(45deg, transparent 
 /* ---------- home Discover carousel (mobile only) ---------- */
 .discover { display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
 .discover::-webkit-scrollbar { display: none; }
-.disc-page { scroll-snap-align: center; scroll-snap-stop: always; flex: 0 0 100%; min-width: 100%; }
+.disc-page { scroll-snap-align: center; scroll-snap-stop: always; flex: 0 0 100%; min-width: 100%; align-self: flex-start; }
 /* news tiles */
 .news-tile { display: block; text-decoration: none; color: inherit; padding: 0; overflow: hidden; cursor: pointer; }
 .news-tile .news-img { width: 100%; height: auto; aspect-ratio: 2 / 1; object-fit: cover; display: block; background: var(--card); }

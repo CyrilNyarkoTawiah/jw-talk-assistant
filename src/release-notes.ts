@@ -1,6 +1,9 @@
 /* Release notes shown in the in-app update dialog — key = APP_VERSION.
    The weekly prep job must add an entry here whenever it bumps the version. */
 export const RELEASE_NOTES: Record<string, string[]> = {
+  '2.7.4': [
+    'Fix: removed the last stretch of blank space at the bottom of the Home page',
+  ],
   '2.7.3': [
     'Home page now ends at its footer — no blank space beneath',
     'Centered animated swipe bands (arrows in your swipe direction) and a refresh button on the news feed',

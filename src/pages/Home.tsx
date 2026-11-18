@@ -24,22 +24,35 @@ export default function Home() {
     // shows blank space below it when the news panel is taller
     const pages = Array.from(w.querySelectorAll<HTMLElement>('.disc-page'))
     let raf = 0
+    let panel = 1
+    let newsY = 0
     const apply = () => {
       if (window.innerWidth > 900) { w.style.height = ''; return }
       const active = w.scrollLeft < w.clientWidth / 2 ? pages[0] : pages[1]
       if (active) w.style.height = active.scrollHeight + 'px'
+    }
+    // panel switch: home always opens at the top; news returns to where you left it
+    const onPanelScroll = () => {
+      const active = w.scrollLeft < w.clientWidth / 2 ? 0 : 1
+      if (active !== panel) {
+        if (panel === 0) newsY = window.scrollY
+        window.scrollTo(0, active === 1 ? 0 : newsY)
+        panel = active
+      }
+      if (panel === 0) newsY = window.scrollY
+      cancelAnimationFrame(raf); raf = requestAnimationFrame(apply)
     }
     apply()
     const onScroll = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(apply) }
     const ro = new ResizeObserver(apply)
     pages.forEach((p) => ro.observe(p))
     window.addEventListener('resize', apply)
-    w.addEventListener('scroll', onScroll, { passive: true })
+    w.addEventListener('scroll', onPanelScroll, { passive: true })
     return () => {
       cancelAnimationFrame(raf)
       ro.disconnect()
       window.removeEventListener('resize', apply)
-      w.removeEventListener('scroll', onScroll)
+      w.removeEventListener('scroll', onPanelScroll)
     }
   }, [])
   const goNews = () => wrap.current?.scrollTo({ left: 0, behavior: 'smooth' })

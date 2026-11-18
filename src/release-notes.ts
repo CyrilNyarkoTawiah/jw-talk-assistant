@@ -1,6 +1,9 @@
 /* Release notes shown in the in-app update dialog — key = APP_VERSION.
    The weekly prep job must add an entry here whenever it bumps the version. */
 export const RELEASE_NOTES: Record<string, string[]> = {
+  '2.7.2': [
+    'Swiping between Home and the news feed now always lands cleanly — no blank pages in either direction',
+  ],
   '2.7.1': [
     'Discover feed polish — no blank space under Home, animated swipe arrows, sharper story pictures, cleaner tiles',
   ],

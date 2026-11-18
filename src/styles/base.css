@@ -688,3 +688,36 @@ select { appearance: none; background-image: linear-gradient(45deg, transparent 
 .wt-ia { margin-top: 8px; background: color-mix(in srgb, var(--accent) 9%, var(--card)); border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line)); border-radius: 12px; padding: 10px 13px; }
 .wt-ia p { font-size: 13.5px; margin: 4px 0; line-height: 1.5; }
 .wt-ia strong { color: var(--accent-deep); }
+
+/* ---------- home Discover carousel (mobile only) ---------- */
+.discover { display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.discover::-webkit-scrollbar { display: none; }
+.disc-page { scroll-snap-align: center; scroll-snap-stop: always; flex: 0 0 100%; min-width: 100%; }
+.disc-hint {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: inherit; font-size: 11.5px; font-weight: 700; color: var(--accent-deep);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  border-radius: 999px; padding: 5px 12px; cursor: pointer; margin-bottom: 2px;
+}
+.disc-hint svg { opacity: 0.8; }
+.disc-hint-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: discPulse 2.2s ease-in-out infinite; }
+@keyframes discPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.35; transform: scale(0.75); } }
+
+/* news tiles */
+.news-tile { display: block; text-decoration: none; color: inherit; padding: 0; overflow: hidden; cursor: pointer; }
+.news-tile .news-img { width: 100%; height: auto; aspect-ratio: 2 / 1; object-fit: cover; display: block; background: var(--card); }
+.news-tile .news-body { padding: 14px 16px 15px; }
+.news-tile h3 { font-size: 15px; line-height: 1.4; margin: 8px 0 0; }
+.news-tile .muted { font-size: 12.5px; margin: 6px 0 0; line-height: 1.5; }
+.news-open { display: inline-flex; align-items: center; gap: 5px; margin-top: 9px; font-size: 12px; font-weight: 800; color: var(--accent-deep); }
+
+/* grouped update dialog notes */
+.upd-notes { max-height: 42vh; overflow-y: auto; text-align: left; }
+.upd-group { margin-top: 8px; }
+.upd-ver { display: inline-block; font-size: 10px; font-weight: 800; letter-spacing: 0.06em; color: var(--accent-deep); background: color-mix(in srgb, var(--accent) 14%, transparent); border-radius: 999px; padding: 2px 9px; margin-bottom: 3px; }
+
+@media (min-width: 901px) {
+  .disc-news { display: none; }
+  .disc-hint { display: none; }
+}

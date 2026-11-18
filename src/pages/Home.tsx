@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { currentWeek, isCurrent, JW_LINKS, useLibrary, weekRange, type WeekEntry } from '../lib/app'
 import { useTheme } from '../App'
 import { preparedCurrent } from '../lib/prepared'
+import newsData from '../data/news.json'
 import { BookOpen, Landmark, Mic2, Search, CalendarDays, ChevronRight, ChevronDown, ChevronUp, CheckCircle2, Quote, Library as LibraryIcon, MessageCircleQuestion, Bell, ExternalLink } from 'lucide-react'
 
 function greeting() {
@@ -13,6 +14,81 @@ function greeting() {
 }
 
 export default function Home() {
+  const wrap = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const w = wrap.current
+    if (!w) return
+    // start on the home panel (news panel sits to its left on mobile)
+    if (window.innerWidth <= 900) w.scrollLeft = w.clientWidth
+  }, [])
+  const goNews = () => wrap.current?.scrollTo({ left: 0, behavior: 'smooth' })
+  const goHome = () => wrap.current?.scrollTo({ left: wrap.current?.clientWidth ?? 0, behavior: 'smooth' })
+  return (
+    <div className="discover" ref={wrap}>
+      <div className="disc-page disc-news">
+        <NewsPanel items={NEWS.items} onBack={goHome} />
+      </div>
+      <div className="disc-page">
+        <HomeInner onDiscover={goNews} />
+      </div>
+    </div>
+  )
+}
+
+/* latest news from jw.org — fetched at build time, hot-linked images */
+const NEWS = newsData as { fetchedAt: string; items: { title: string; url: string; date: string; teaser: string; img: string }[] }
+
+function fmtNewsDate(iso: string): string {
+  try {
+    return new Date(iso + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+  } catch { return iso }
+}
+
+function NewsPanel({ items, onBack }: { items: typeof NEWS.items; onBack: () => void }) {
+  return (
+    <div>
+      <div className="rise d1" style={{ marginTop: 6 }}>
+        <h1 style={{ fontSize: 24, margin: 0, color: 'var(--navy)' }}>What's new</h1>
+        <p className="muted" style={{ margin: '3px 0 0', fontWeight: 600, fontSize: 13 }}>
+          Latest from jw.org · tap a tile to read it there
+        </p>
+        <button className="disc-hint" onClick={onBack} style={{ margin: '12px 0 2px' }}>
+          <ChevronRight size={14} /> Swipe left for Home
+        </button>
+      </div>
+      {items.length === 0 && (
+        <div className="card" style={{ marginTop: 16 }}>
+          <p style={{ margin: 0, fontSize: 13.5 }}>No news loaded yet — the feed refreshes whenever the app updates.</p>
+        </div>
+      )}
+      {items.map((n, i) => (
+        <a
+          className={`card news-tile rise d${Math.min(i + 1, 6)}`}
+          href={n.url}
+          target="_blank"
+          rel="noreferrer noopener"
+          key={n.url}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {n.img && <img className="news-img" src={n.img} alt="" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }} />}
+          <div className="news-body">
+            <span className="tag">JW.ORG · {fmtNewsDate(n.date)}</span>
+            <h3>{n.title}</h3>
+            {n.teaser && <p className="muted">{n.teaser}</p>}
+            <span className="news-open">Read on jw.org <ExternalLink size={12} /></span>
+          </div>
+        </a>
+      ))}
+      <div className="card" style={{ marginTop: 14 }}>
+        <p className="muted" style={{ margin: 0, fontSize: 12.5 }}>
+          <a href="https://www.jw.org/en/news/" target="_blank" rel="noreferrer noopener">More news on jw.org <ExternalLink size={11} style={{ verticalAlign: '-2px' }} /></a>
+        </p>
+      </div>
+    </div>
+  )
+}
+
+function HomeInner({ onDiscover }: { onDiscover: () => void }) {
   const nav = useNavigate()
   const week = currentWeek()
   const prepared = preparedCurrent()
@@ -131,6 +207,11 @@ export default function Home() {
 
   return (
     <div>
+      {/* swipe hint for the Discover news panel (mobile only, hidden by CSS on desktop) */}
+      <button className="disc-hint rise d1" onClick={onDiscover}>
+        <span className="disc-hint-dot" /> Swipe right for what's new from jw.org <ChevronRight size={13} />
+      </button>
+
       {/* greeting row */}
       <div className="rise d1" style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 6 }}>
         <div>

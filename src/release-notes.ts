@@ -1,6 +1,10 @@
 /* Release notes shown in the in-app update dialog — key = APP_VERSION.
    The weekly prep job must add an entry here whenever it bumps the version. */
 export const RELEASE_NOTES: Record<string, string[]> = {
+  '2.7.0': [
+    'Swipe right on Home for the latest news from jw.org — a Discover-style feed (mobile only)',
+    'One update dialog now shows everything new since your last update, with a single refresh',
+  ],
   '2.6.3': [
     'Scroll memory refined — exact position, every time',
   ],

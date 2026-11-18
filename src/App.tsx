@@ -19,7 +19,7 @@ import ProfileSetup from './pages/ProfileSetup'
 import { RELEASE_NOTES } from './release-notes'
 
 /* bump this with every release — triggers the in-app update dialog */
-export const APP_VERSION = '2.6.3'
+export const APP_VERSION = '2.7.0'
 
 /* ---------- themes: each family has a light and a dark mode ---------- */
 export const THEMES = [
@@ -137,13 +137,35 @@ function Splash({ onDone }: { onDone: () => void }) {
 }
 
 /* ---------- update dialog ---------- */
+/* version helpers: numeric compare (2.10.0 > 2.9.0) */
+function cmpVer(a: string, b: string): number {
+  const pa = a.split('.').map((n) => parseInt(n, 10) || 0)
+  const pb = b.split('.').map((n) => parseInt(n, 10) || 0)
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const d = (pa[i] ?? 0) - (pb[i] ?? 0)
+    if (d) return d
+  }
+  return 0
+}
+
+/* every release note between the stored version and the target, oldest first */
+function compiledNotes(from: string | null, to: string): { v: string; lines: string[] }[] {
+  return Object.keys(RELEASE_NOTES)
+    .filter((v) => cmpVer(v, to) <= 0 && (!from || cmpVer(v, from) > 0))
+    .sort(cmpVer)
+    .map((v) => ({ v, lines: RELEASE_NOTES[v] ?? [] }))
+}
+
 function UpdateDialog() {
   const [show, setShow] = useState(() => {
     const prev = localStorage.getItem('jwtalk_app_ver')
     return !!prev && prev !== APP_VERSION
   })
-  const [notes, setNotes] = useState<string[]>(() => RELEASE_NOTES[APP_VERSION] ?? [])
+  const prevVer = useRef<string | null>(localStorage.getItem('jwtalk_app_ver'))
   const [pendingVer, setPendingVer] = useState<string>(APP_VERSION)
+  // compile every release note between the stored version and the target —
+  // a user returning after many releases gets ONE dialog with everything new
+  const notes = compiledNotes(prevVer.current, pendingVer)
   useEffect(() => {
     // network version check — catches updates even when the cached shell is stale
     fetch('version.json', { cache: 'no-store' })
@@ -152,7 +174,6 @@ function UpdateDialog() {
         if (j && j.v && j.v !== APP_VERSION) {
           setShow(true)
           setPendingVer(j.v)
-          setNotes(RELEASE_NOTES[j.v] ?? [])
         }
       })
       .catch(() => {})
@@ -167,7 +188,6 @@ function UpdateDialog() {
             if (w.state === 'installed' && navigator.serviceWorker.controller) {
               setShow(true)
               setPendingVer(APP_VERSION)
-              setNotes(RELEASE_NOTES[APP_VERSION] ?? [])
             }
           })
         })
@@ -196,11 +216,19 @@ function UpdateDialog() {
         <button className="upd-close" onClick={() => setShow(false)} aria-label="Later"><X size={15} /></button>
         <div className="brand-logo upd-ico"><RefreshCw size={20} /></div>
         <h3>Update available</h3>
-        <p className="muted">Version {pendingVer} of JW Study Assistant is ready. Your saved data is kept — refreshing only loads the new app.</p>
+        <p className="muted">
+          Version {pendingVer} of JW Study Assistant is ready. Your saved data is kept — refreshing only loads the new app.
+          {notes.length > 1 && <> Everything new since version {prevVer.current} is below.</>}
+        </p>
         {notes.length > 0 && (
           <div className="upd-notes">
-            <strong>What's new</strong>
-            <ul>{notes.map((n, i) => <li key={i}>{n}</li>)}</ul>
+            <strong>What's new{notes.length > 1 && prevVer.current ? ` since v${prevVer.current}` : ''}</strong>
+            {notes.map((g) => (
+              <div key={g.v} className="upd-group">
+                {notes.length > 1 && <span className="upd-ver">v{g.v}</span>}
+                <ul>{g.lines.map((n, i) => <li key={i}>{n}</li>)}</ul>
+              </div>
+            ))}
           </div>
         )}
         <button className="btn primary" style={{ width: '100%', marginTop: 14 }} onClick={apply}>Refresh now</button>

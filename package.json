@@ -4,7 +4,8 @@
   "version": "2.4.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "prebuild": "node scripts/fetch-news.mjs",
+  "dev": "vite",
     "build": "tsc --noEmit -p tsconfig.json && vite build && node scripts/write-version.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.json"

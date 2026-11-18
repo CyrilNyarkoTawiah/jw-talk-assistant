@@ -4,7 +4,7 @@ import { currentWeek, isCurrent, JW_LINKS, useLibrary, weekRange, type WeekEntry
 import { useTheme } from '../App'
 import { preparedCurrent } from '../lib/prepared'
 import newsData from '../data/news.json'
-import { BookOpen, Landmark, Mic2, Search, CalendarDays, ChevronRight, ChevronDown, ChevronUp, CheckCircle2, Quote, Library as LibraryIcon, MessageCircleQuestion, Bell, ExternalLink } from 'lucide-react'
+import { BookOpen, Landmark, Mic2, Search, CalendarDays, ChevronRight, ChevronLeft, ChevronDown, ChevronUp, CheckCircle2, Quote, Library as LibraryIcon, MessageCircleQuestion, Bell, ExternalLink } from 'lucide-react'
 
 function greeting() {
   const h = new Date().getHours()
@@ -20,6 +20,27 @@ export default function Home() {
     if (!w) return
     // start on the home panel (news panel sits to its left on mobile)
     if (window.innerWidth <= 900) w.scrollLeft = w.clientWidth
+    // lock the carousel height to the ACTIVE panel, so the home panel never
+    // shows blank space below it when the news panel is taller
+    const pages = Array.from(w.querySelectorAll<HTMLElement>('.disc-page'))
+    let raf = 0
+    const apply = () => {
+      if (window.innerWidth > 900) { w.style.height = ''; return }
+      const active = w.scrollLeft < w.clientWidth / 2 ? pages[0] : pages[1]
+      if (active) w.style.height = active.scrollHeight + 'px'
+    }
+    apply()
+    const onScroll = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(apply) }
+    const ro = new ResizeObserver(apply)
+    pages.forEach((p) => ro.observe(p))
+    window.addEventListener('resize', apply)
+    w.addEventListener('scroll', onScroll, { passive: true })
+    return () => {
+      cancelAnimationFrame(raf)
+      ro.disconnect()
+      window.removeEventListener('resize', apply)
+      w.removeEventListener('scroll', onScroll)
+    }
   }, [])
   const goNews = () => wrap.current?.scrollTo({ left: 0, behavior: 'smooth' })
   const goHome = () => wrap.current?.scrollTo({ left: wrap.current?.clientWidth ?? 0, behavior: 'smooth' })
@@ -49,13 +70,15 @@ function NewsPanel({ items, onBack }: { items: typeof NEWS.items; onBack: () => 
     <div>
       <div className="rise d1" style={{ marginTop: 6 }}>
         <h1 style={{ fontSize: 24, margin: 0, color: 'var(--navy)' }}>What's new</h1>
-        <p className="muted" style={{ margin: '3px 0 0', fontWeight: 600, fontSize: 13 }}>
+        <p className="muted" style={{ margin: '3px 0 14px', fontWeight: 600, fontSize: 13 }}>
           Latest from jw.org · tap a tile to read it there
         </p>
-        <button className="disc-hint" onClick={onBack} style={{ margin: '12px 0 2px' }}>
-          <ChevronRight size={14} /> Swipe left for Home
-        </button>
       </div>
+      <button className="swipe-strip" onClick={onBack} style={{ marginBottom: 14 }}>
+        <span className="swipe-chev swipe-anim-r"><ChevronRight size={15} /><ChevronRight size={15} /></span>
+        Swipe for Home
+        <span className="swipe-chev swipe-anim-r" style={{ visibility: 'hidden' }} aria-hidden><ChevronRight size={15} /></span>
+      </button>
       {items.length === 0 && (
         <div className="card" style={{ marginTop: 16 }}>
           <p style={{ margin: 0, fontSize: 13.5 }}>No news loaded yet — the feed refreshes whenever the app updates.</p>
@@ -207,9 +230,11 @@ function HomeInner({ onDiscover }: { onDiscover: () => void }) {
 
   return (
     <div>
-      {/* swipe hint for the Discover news panel (mobile only, hidden by CSS on desktop) */}
-      <button className="disc-hint rise d1" onClick={onDiscover}>
-        <span className="disc-hint-dot" /> Swipe right for what's new from jw.org <ChevronRight size={13} />
+      {/* swipe strip for the Discover news panel (mobile only, hidden by CSS on desktop) */}
+      <button className="swipe-strip" onClick={onDiscover} style={{ marginBottom: 10 }}>
+        <span className="swipe-chev swipe-anim-l" style={{ visibility: 'hidden' }} aria-hidden><ChevronLeft size={15} /></span>
+        Swipe for what's new
+        <span className="swipe-chev swipe-anim-l"><ChevronLeft size={15} /><ChevronLeft size={15} /></span>
       </button>
 
       {/* greeting row */}

@@ -29,7 +29,7 @@ try {
     if (!urlM || !dateM) continue
     const titleM = c.match(/<h3>\s*<a[^>]*>([\s\S]*?)<\/a>/)
     const descM = c.match(/<p class="desc">([\s\S]*?)<\/p>/)
-    const imgM = c.match(/data-img-type='lsr'[^>]*data-img-size-md='([^']+)'/) || c.match(/data-img-size-md='([^']+)'/)
+    const imgM = c.match(/data-img-type='lsr'[^>]*data-img-size-lg='([^']+)'/) || c.match(/data-img-type='pnr'[^>]*data-img-size-lg='([^']+)'/) || c.match(/data-img-size-md='([^']+)'/)
     if (!titleM) continue
     const title = text(titleM[1])
     if (!title) continue
@@ -48,12 +48,24 @@ try {
     if (!urlM || !byUrl.has(urlM[1])) continue
     const it = byUrl.get(urlM[1])
     const descM = c.match(/<p class="desc">([\s\S]*?)<\/p>/)
-    const imgM = c.match(/data-img-type='lsr'[^>]*data-img-size-md='([^']+)'/) || c.match(/data-img-size-md='([^']+)'/)
+    const imgM = c.match(/data-img-type='lsr'[^>]*data-img-size-lg='([^']+)'/) || c.match(/data-img-type='pnr'[^>]*data-img-size-lg='([^']+)'/) || c.match(/data-img-size-md='([^']+)'/)
     if (descM && !it.teaser) it.teaser = text(descM[1]).slice(0, 220)
     if (imgM && !it.img) it.img = imgM[1]
   }
   const items = [...byUrl.values()].slice(0, 12)
   if (items.length < 3) throw new Error('parsed only ' + items.length + ' items')
+
+  // many list items only expose a small square image; the wide 1200x600 lsr_lg
+  // variant exists on the CDN for the same pub id — verify before using it
+  for (const it of items) {
+    const m = it.img.match(/\/img\/p\/(\d+)\//)
+    if (!m) continue
+    const wide = `https://cms-imgp.jw-cdn.org/img/p/${m[1]}/univ/art/${m[1]}_univ_lsr_lg.jpg`
+    try {
+      const r = await fetch(wide, { method: 'GET', headers: { 'Range': 'bytes=0-1' }, signal: AbortSignal.timeout(20000) })
+      if (r.status === 206 || r.status === 200) it.img = wide
+    } catch { /* keep the square image */ }
+  }
 
   // keep the freshest fetch, but never regress to an older fetchedAt
   let prev = { fetchedAt: '' }

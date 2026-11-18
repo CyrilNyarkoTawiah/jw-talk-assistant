@@ -4,7 +4,7 @@ import { currentWeek, isCurrent, JW_LINKS, useLibrary, weekRange, type WeekEntry
 import { useTheme } from '../App'
 import { preparedCurrent } from '../lib/prepared'
 import newsData from '../data/news.json'
-import { BookOpen, Landmark, Mic2, Search, CalendarDays, ChevronRight, ChevronLeft, ChevronDown, ChevronUp, CheckCircle2, Quote, Library as LibraryIcon, MessageCircleQuestion, Bell, ExternalLink } from 'lucide-react'
+import { BookOpen, Landmark, Mic2, Search, CalendarDays, ChevronRight, ChevronLeft, ChevronDown, ChevronUp, CheckCircle2, Quote, Library as LibraryIcon, MessageCircleQuestion, Bell, ExternalLink, RefreshCw } from 'lucide-react'
 
 function greeting() {
   const h = new Date().getHours()
@@ -15,6 +15,40 @@ function greeting() {
 
 export default function Home() {
   const wrap = useRef<HTMLDivElement>(null)
+  const [newsItems, setNewsItems] = useState<NewsItem[]>(NEWS.items)
+  const [refreshing, setRefreshing] = useState(false)
+  const [refreshErr, setRefreshErr] = useState('')
+  // the home page ends at its footer — trim the tall bottom clearance other pages need
+  useEffect(() => {
+    const main = document.querySelector('main.main')
+    if (!main) return
+    const prev = (main as HTMLElement).style.paddingBottom
+    if (window.innerWidth <= 900) (main as HTMLElement).style.paddingBottom = '80px'
+    return () => { (main as HTMLElement).style.paddingBottom = prev }
+  }, [])
+  // a fresher feed cached from an in-app refresh wins over the build-time one
+  useEffect(() => {
+    try {
+      const c = JSON.parse(localStorage.getItem('jwtalk_news_cache') ?? 'null')
+      if (c?.items?.length && c.fetchedAt > NEWS.fetchedAt) setNewsItems(c.items)
+    } catch { /* ignore */ }
+  }, [])
+  async function refreshNews() {
+    if (refreshing) return
+    setRefreshing(true); setRefreshErr('')
+    try {
+      const r = await fetch('https://r.jina.ai/https://www.jw.org/en/news/', { headers: { 'X-Return-Format': 'html' } })
+      if (!r.ok) throw new Error('HTTP ' + r.status)
+      const items = parseNewsHtml(await r.text())
+      if (items.length < 3) throw new Error('unreadable')
+      setNewsItems(items)
+      localStorage.setItem('jwtalk_news_cache', JSON.stringify({ fetchedAt: new Date().toISOString(), items }))
+    } catch {
+      setRefreshErr('Could not refresh right now — check your connection and try again.')
+    } finally {
+      setRefreshing(false)
+    }
+  }
   useEffect(() => {
     const w = wrap.current
     if (!w) return
@@ -60,7 +94,7 @@ export default function Home() {
   return (
     <div className="discover" ref={wrap}>
       <div className="disc-page disc-news">
-        <NewsPanel items={NEWS.items} onBack={goHome} />
+        <NewsPanel items={newsItems} onBack={goHome} onRefresh={refreshNews} refreshing={refreshing} refreshErr={refreshErr} />
       </div>
       <div className="disc-page">
         <HomeInner onDiscover={goNews} />
@@ -70,7 +104,8 @@ export default function Home() {
 }
 
 /* latest news from jw.org — fetched at build time, hot-linked images */
-const NEWS = newsData as { fetchedAt: string; items: { title: string; url: string; date: string; teaser: string; img: string }[] }
+type NewsItem = { title: string; url: string; date: string; teaser: string; img: string }
+const NEWS = newsData as { fetchedAt: string; items: NewsItem[] }
 
 function fmtNewsDate(iso: string): string {
   try {
@@ -78,19 +113,53 @@ function fmtNewsDate(iso: string): string {
   } catch { return iso }
 }
 
-function NewsPanel({ items, onBack }: { items: typeof NEWS.items; onBack: () => void }) {
+/* same parsing the build-time fetcher uses — runs in the browser for in-app refresh */
+function parseNewsHtml(html: string): NewsItem[] {
+  const text = (s: string) => s.replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim()
+  const chunks = html.split(/<div class="synopsis/)
+  const byUrl = new Map<string, NewsItem>()
+  for (const c of chunks) {
+    if (!c.includes('pubDate')) continue
+    const urlM = c.match(/href="(\/en\/news\/region\/[a-z]+\/[a-zA-Z0-9-]+)\/"/)
+    const dateM = c.match(/class="meta pubDate">(\d{4}-\d{2}-\d{2})</)
+    const titleM = c.match(/<h3>\s*<a[^>]*>([\s\S]*?)<\/a>/)
+    if (!urlM || !dateM || !titleM) continue
+    const title = text(titleM[1])
+    if (!title || byUrl.has(urlM[1])) continue
+    byUrl.set(urlM[1], { title, url: 'https://www.jw.org' + urlM[1] + '/', date: dateM[1], teaser: '', img: '' })
+    const it = byUrl.get(urlM[1])!
+    const descM = c.match(/<p class="desc">([\s\S]*?)<\/p>/)
+    const imgM = c.match(/data-img-size-md='([^']+)'/)
+    if (descM) it.teaser = text(descM[1]).slice(0, 220)
+    if (imgM) it.img = imgM[1]
+  }
+  const items = [...byUrl.values()].slice(0, 12)
+  // prefer the wide 1200x600 image for each pub id; tile hides the img if it 404s
+  for (const it of items) {
+    const m = it.img.match(/\/img\/p\/(\d+)\//)
+    if (m) it.img = `https://cms-imgp.jw-cdn.org/img/p/${m[1]}/univ/art/${m[1]}_univ_lsr_lg.jpg`
+  }
+  return items
+}
+
+function NewsPanel({ items, onBack, onRefresh, refreshing, refreshErr }: { items: NewsItem[]; onBack: () => void; onRefresh: () => void; refreshing: boolean; refreshErr: string }) {
   return (
     <div>
-      <div className="rise d1" style={{ marginTop: 6 }}>
-        <h1 style={{ fontSize: 24, margin: 0, color: 'var(--navy)' }}>What's new</h1>
-        <p className="muted" style={{ margin: '3px 0 14px', fontWeight: 600, fontSize: 13 }}>
-          Latest from jw.org · tap a tile to read it there
-        </p>
+      <div className="rise d1" style={{ marginTop: 6, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h1 style={{ fontSize: 24, margin: 0, color: 'var(--navy)' }}>What's new</h1>
+          <p className="muted" style={{ margin: '3px 0 14px', fontWeight: 600, fontSize: 13 }}>
+            Latest from jw.org · tap a tile to read it there
+          </p>
+        </div>
+        <button className="news-refresh" onClick={onRefresh} disabled={refreshing} aria-label="Refresh feed" title="Refresh feed">
+          <RefreshCw size={15} className={refreshing ? 'spin' : ''} />
+        </button>
       </div>
+      {refreshErr && <p style={{ margin: '-8px 0 10px', fontSize: 12, color: 'var(--red, #c0392b)', fontWeight: 600 }}>{refreshErr}</p>}
       <button className="swipe-strip" onClick={onBack} style={{ marginBottom: 14 }}>
-        <span className="swipe-chev swipe-anim-r"><ChevronRight size={15} /><ChevronRight size={15} /></span>
+        <span className="swipe-chev dir-l"><ChevronLeft size={14} /><ChevronLeft size={14} /><ChevronLeft size={14} /></span>
         Swipe for Home
-        <span className="swipe-chev swipe-anim-r" style={{ visibility: 'hidden' }} aria-hidden><ChevronRight size={15} /></span>
       </button>
       {items.length === 0 && (
         <div className="card" style={{ marginTop: 16 }}>
@@ -245,9 +314,8 @@ function HomeInner({ onDiscover }: { onDiscover: () => void }) {
     <div>
       {/* swipe strip for the Discover news panel (mobile only, hidden by CSS on desktop) */}
       <button className="swipe-strip" onClick={onDiscover} style={{ marginBottom: 10 }}>
-        <span className="swipe-chev swipe-anim-l" style={{ visibility: 'hidden' }} aria-hidden><ChevronLeft size={15} /></span>
         Swipe for what's new
-        <span className="swipe-chev swipe-anim-l"><ChevronLeft size={15} /><ChevronLeft size={15} /></span>
+        <span className="swipe-chev dir-r"><ChevronRight size={14} /><ChevronRight size={14} /><ChevronRight size={14} /></span>
       </button>
 
       {/* greeting row */}

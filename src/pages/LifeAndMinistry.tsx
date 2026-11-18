@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { currentWeek, JW_LINKS, useLibrary, weekRange } from '../lib/app'
 import { preparedCurrent, type PreparedLMItem, type PreparedPicture } from '../lib/prepared'
 import { buildStudyPrompt, buildGemsPrompt, askAi, SYSTEM_INSTRUCTIONS } from '../lib/ai'
-import { Copy, Check, ExternalLink, Sparkles, Printer, Share2, CheckCircle2, CalendarDays, ImageIcon } from 'lucide-react'
+import { Copy, Check, ExternalLink, Sparkles, Printer, Share2, CheckCircle2, CalendarDays, ImageIcon, Gem, Megaphone, Users } from 'lucide-react'
 
 const STYLES = [
   'Short comment (15-25 seconds)',
@@ -134,11 +134,12 @@ export default function LifeAndMinistry() {
     apply: 'APPLY YOURSELF TO THE FIELD MINISTRY', living: 'LIVING AS CHRISTIANS',
   }
 
-  // three meeting parts, colour-coded with tints derived from the theme accent
+  // three meeting parts, colour-coded with tints derived from the theme accent,
+  // each with a part symbol like the official workbook headers
   const SECTIONS = [
-    { title: 'Treasures from God’s Word', kinds: ['treasures', 'gems', 'reading'], tint: 'color-mix(in srgb, var(--accent) 62%, transparent)' },
-    { title: 'Apply Yourself to the Field Ministry', kinds: ['apply'], tint: 'color-mix(in srgb, var(--accent) 38%, transparent)' },
-    { title: 'Living as Christians', kinds: ['living'], tint: 'color-mix(in srgb, var(--accent) 18%, transparent)' },
+    { title: 'Treasures from God’s Word', kinds: ['treasures', 'gems', 'reading'], tint: 'color-mix(in srgb, var(--accent) 62%, transparent)', Icon: Gem },
+    { title: 'Apply Yourself to the Field Ministry', kinds: ['apply'], tint: 'color-mix(in srgb, var(--accent) 38%, transparent)', Icon: Megaphone },
+    { title: 'Living as Christians', kinds: ['living'], tint: 'color-mix(in srgb, var(--accent) 18%, transparent)', Icon: Users },
   ]
 
   return (
@@ -176,9 +177,9 @@ export default function LifeAndMinistry() {
             const items = prepared.lm.items.filter((it: PreparedLMItem) => seg.kinds.includes(it.kind))
             if (!items.length) return null
             return (
-              <div key={seg.title}>
-                <div className="lm-seg" style={{ ['--seg' as any]: seg.tint }}>
-                  <span className="lm-seg-dot" />
+              <div key={seg.title} className="lm-sec" style={{ ['--seg' as any]: seg.tint }}>
+                <div className="lm-seg">
+                  <span className="lm-seg-icon"><seg.Icon size={16} /></span>
                   <h2>{seg.title}</h2>
                 </div>
                 {items.map((it) => (

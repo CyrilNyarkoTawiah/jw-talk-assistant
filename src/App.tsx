@@ -19,7 +19,7 @@ import ProfileSetup from './pages/ProfileSetup'
 import { RELEASE_NOTES } from './release-notes'
 
 /* bump this with every release — triggers the in-app update dialog */
-export const APP_VERSION = '2.6.1'
+export const APP_VERSION = '2.6.2'
 
 /* ---------- themes: each family has a light and a dark mode ---------- */
 export const THEMES = [
@@ -295,18 +295,19 @@ if ('scrollRestoration' in window.history) window.history.scrollRestoration = 'm
 
 function ScrollKeeper() {
   const location = useLocation()
-  const prevPath = useRef(location.pathname)
   useEffect(() => {
-    if (SCROLL_REMEMBER.includes(prevPath.current)) {
-      scrollMemory[prevPath.current] = window.scrollY
-    }
-    prevPath.current = location.pathname
+    // track the scroll position continuously while THIS page is open —
+    // reading it at leave-time is too late: the next page's shorter content
+    // clamps window.scrollY before we get to read it.
+    const onScroll = () => { scrollMemory[location.pathname] = window.scrollY }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
     const y = SCROLL_REMEMBER.includes(location.pathname) ? (scrollMemory[location.pathname] ?? 0) : 0
     window.scrollTo(0, y)
-    // re-assert after the browser's own late adjustments and once content settles
+    // re-assert after the browser's own late adjustments
     requestAnimationFrame(() => window.scrollTo(0, y))
-    const t = window.setTimeout(() => window.scrollTo(0, y), 60)
-    return () => window.clearTimeout(t)
+    const t = window.setTimeout(() => window.scrollTo(0, y), 80)
+    return () => { window.removeEventListener('scroll', onScroll); window.clearTimeout(t) }
   }, [location.pathname])
   return null
 }

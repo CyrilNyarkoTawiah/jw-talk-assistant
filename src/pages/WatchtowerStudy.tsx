@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { currentWeek, useLibrary, weekRange } from '../lib/app'
 import { preparedCurrent, type PreparedWTItem } from '../lib/prepared'
 import { buildStudyPrompt, askAi, SYSTEM_INSTRUCTIONS } from '../lib/ai'
-import { Copy, Check, ExternalLink, Sparkles, Printer, Share2, CheckCircle2, CalendarDays } from 'lucide-react'
+import { Copy, Check, ExternalLink, Sparkles, Printer, Share2, CheckCircle2, CalendarDays, Lightbulb } from 'lucide-react'
 
 const STYLES = ['Short comment (15-25 seconds)', 'Standard comment (25-40 seconds)', 'Detailed comment (40-60 seconds)', 'Deep research answer', 'Additional comment', 'Practical application']
 
@@ -34,6 +34,19 @@ function WTItem({ it }: { it: PreparedWTItem }) {
       </div>
       <p style={{ whiteSpace: 'pre-wrap', fontSize: 14, marginTop: 10, background: 'var(--card)', borderRadius: 10, padding: '10px 14px' }}>{it.comment}</p>
       <p className="muted" style={{ fontSize: 11, marginTop: 4 }}>Meeting comment — read it aloud as your own words.</p>
+      {it.paraNotes && it.paraNotes.length > 0 && (
+        <div className="para-notes">
+          {it.paraNotes.map((pn) => (
+            <div className="para-note" key={pn.num}>
+              <span className="para-chip">¶ {pn.num}</span>
+              <p className="para-points">{pn.points}</p>
+              {pn.highlight && (
+                <p className="para-hl"><Sparkles size={12} /> {pn.highlight}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
       {it.scriptures.map((s) => (
         <p key={s.ref} className="quote">
           <strong style={{ color: 'var(--gold-deep)' }}>{s.ref}</strong> — “{s.quote}”
@@ -42,13 +55,13 @@ function WTItem({ it }: { it: PreparedWTItem }) {
       ))}
       {(it.insight || it.apply) && (
         <>
-          <button className="btn ghost" style={{ marginTop: 8, fontSize: 12, padding: '5px 10px' }} onClick={() => setExpanded(!expanded)}>
-            {expanded ? 'Hide insight' : 'Deeper insight & application'}
+          <button className={'btn ia-btn' + (expanded ? ' ia-open' : '')} onClick={() => setExpanded(!expanded)}>
+            <Lightbulb size={14} /> {expanded ? 'Hide insight & application' : 'Deeper insight & application'}
           </button>
           {expanded && (
-            <div style={{ marginTop: 8 }}>
-              {it.insight && <p style={{ fontSize: 13.5, marginTop: 6 }}><strong>Insight:</strong> {it.insight}</p>}
-              {it.apply && <p style={{ fontSize: 13.5, marginTop: 4 }}><strong>Apply:</strong> {it.apply}</p>}
+            <div className="wt-ia">
+              {it.insight && <p><strong>Insight</strong> — {it.insight}</p>}
+              {it.apply && <p><strong>Apply</strong> — {it.apply}</p>}
             </div>
           )}
         </>

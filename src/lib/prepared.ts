@@ -5,9 +5,11 @@ import { currentWeek } from './app'
 const files = import.meta.glob('../data/prepared/*.json', { eager: true }) as Record<string, { default: Prepared }>
 
 export interface PreparedScripture { ref: string; quote: string; use?: string }
+export interface PreparedParaNote { num: string; points: string; highlight?: string }
 export interface PreparedWTItem {
   num: string; q: string; paras: string; comment: string
   scriptures: PreparedScripture[]; insight?: string; apply?: string
+  paraNotes?: PreparedParaNote[]
 }
 export interface PreparedCBSItem { label: string; q: string; answer: string; scriptures: PreparedScripture[] }
 export interface PreparedPicture { url: string; alt: string; cite: string }

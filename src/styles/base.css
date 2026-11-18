@@ -659,3 +659,23 @@ select { appearance: none; background-image: linear-gradient(45deg, transparent 
 .l6-pic { margin: 12px 0 4px; border-radius: 16px; overflow: hidden; border: 1px solid var(--line); background: var(--card); }
 .l6-pic img { width: 100%; display: block; }
 .l6-pic figcaption { font-size: 10.5px; color: var(--text-muted); padding: 7px 11px 9px; letter-spacing: 0.04em; }
+
+/* ---------- L&M three meeting parts ---------- */
+.lm-seg { display: flex; align-items: center; gap: 10px; margin: 26px 2px 2px; padding-top: 6px; }
+.lm-seg-dot { width: 11px; height: 11px; border-radius: 50%; background: var(--seg); box-shadow: 0 0 0 3px color-mix(in srgb, var(--seg) 30%, transparent); flex: none; }
+.lm-seg h2 { font-size: 12.5px; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; color: var(--foreground); opacity: 0.85; margin: 0; }
+
+/* ---------- watchtower paragraph notes ---------- */
+.para-notes { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+.para-note { background: color-mix(in srgb, var(--accent) 7%, var(--card)); border: 1px solid var(--line); border-radius: 12px; padding: 9px 11px; }
+.para-chip { display: inline-block; font-size: 10px; font-weight: 800; letter-spacing: 0.08em; color: var(--accent-deep); background: color-mix(in srgb, var(--accent) 16%, transparent); border-radius: 999px; padding: 2px 9px; margin-bottom: 5px; }
+.para-points { font-size: 13px; margin: 0; line-height: 1.5; color: var(--foreground); }
+.para-hl { display: flex; gap: 6px; align-items: flex-start; font-size: 12.5px; margin: 6px 0 0; color: var(--accent-deep); line-height: 1.45; }
+.para-hl svg { flex: none; margin-top: 2px; }
+
+/* ---------- insight & application button ---------- */
+.ia-btn { margin-top: 10px; width: 100%; justify-content: center; gap: 7px; font-size: 12.5px; padding: 9px 12px; border-radius: 12px; }
+.ia-open { opacity: 0.82; }
+.wt-ia { margin-top: 8px; background: color-mix(in srgb, var(--accent) 9%, var(--card)); border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line)); border-radius: 12px; padding: 10px 13px; }
+.wt-ia p { font-size: 13.5px; margin: 4px 0; line-height: 1.5; }
+.wt-ia strong { color: var(--accent-deep); }

@@ -134,6 +134,13 @@ export default function LifeAndMinistry() {
     apply: 'APPLY YOURSELF TO THE FIELD MINISTRY', living: 'LIVING AS CHRISTIANS',
   }
 
+  // three meeting parts, colour-coded with tints derived from the theme accent
+  const SECTIONS = [
+    { title: 'Treasures from God’s Word', kinds: ['treasures', 'gems', 'reading'], tint: 'color-mix(in srgb, var(--accent) 62%, transparent)' },
+    { title: 'Apply Yourself to the Field Ministry', kinds: ['apply'], tint: 'color-mix(in srgb, var(--accent) 38%, transparent)' },
+    { title: 'Living as Christians', kinds: ['living'], tint: 'color-mix(in srgb, var(--accent) 18%, transparent)' },
+  ]
+
   return (
     <div>
       <div className="page-head">
@@ -165,7 +172,16 @@ export default function LifeAndMinistry() {
             </div>
           </div>
 
-          {prepared.lm.items.map((it) => (
+          {SECTIONS.map((seg) => {
+            const items = prepared.lm.items.filter((it: PreparedLMItem) => seg.kinds.includes(it.kind))
+            if (!items.length) return null
+            return (
+              <div key={seg.title}>
+                <div className="lm-seg" style={{ ['--seg' as any]: seg.tint }}>
+                  <span className="lm-seg-dot" />
+                  <h2>{seg.title}</h2>
+                </div>
+                {items.map((it) => (
             <div className="card" key={it.num} style={{ marginTop: 12 }}>
               <span className="tag">{kindLabel[it.kind] ?? it.kind}</span>
               <h3 style={{ fontSize: 15.5, margin: '8px 0 2px' }}>{it.num}. {it.title} <span className="muted">({it.mins} min.)</span></h3>
@@ -214,7 +230,10 @@ export default function LifeAndMinistry() {
                 <button className="btn ghost" style={{ padding: '3px 9px', fontSize: 11.5 }} onClick={() => share(it.answer, it.title)}><Share2 size={12} /> Share</button>
               </div>
             </div>
-          ))}
+                ))}
+              </div>
+            )
+          })}
         </>
       ) : (
         <div className="card grey" style={{ marginTop: 16 }}>

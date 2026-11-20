@@ -83,21 +83,21 @@ async function stats(url, env) {
   if (url.searchParams.get('token') !== token) return new Response('Unauthorized', { status: 401 });
 
   await ensureSchema(env.DB);
-  const [totals, byDay, topPages, visitors] = await env.DB.batch([
-    env.DB.prepare(`SELECT COUNT(*) AS n, COALESCE(SUM(visits), 0) AS v FROM visitors`),
-    env.DB.prepare(`SELECT substr(ts, 1, 10) AS day, COUNT(*) AS n FROM visits
-                    GROUP BY day ORDER BY day DESC LIMIT 30`),
-    env.DB.prepare(`SELECT page, COUNT(*) AS n FROM visits GROUP BY page ORDER BY n DESC LIMIT 10`),
-    env.DB.prepare(`SELECT id, name, first_seen, last_seen, visits FROM visitors
-                    ORDER BY last_seen DESC LIMIT 100`),
-  ]);
+  const safe = async (q) => {
+    try { const r = await env.DB.prepare(q).all(); return r.results ?? []; } catch { return []; }
+  };
+  const totalsRow = await env.DB
+    .prepare(`SELECT COUNT(*) AS n, COALESCE(SUM(visits), 0) AS v FROM visitors`)
+    .first().catch(() => null);
   return cors(new Response(JSON.stringify({
     generatedAt: new Date().toISOString(),
-    totalVisitors: totals[0].results[0]?.n ?? 0,
-    totalVisits: totals[0].results[0]?.v ?? 0,
-    last30Days: byDay[0].results,
-    topPages: topPages[0].results,
-    visitors: visitors[0].results,
+    totalVisitors: totalsRow?.n ?? 0,
+    totalVisits: totalsRow?.v ?? 0,
+    last30Days: await safe(`SELECT substr(ts, 1, 10) AS day, COUNT(*) AS n FROM visits
+                    GROUP BY day ORDER BY day DESC LIMIT 30`),
+    topPages: await safe(`SELECT page, COUNT(*) AS n FROM visits GROUP BY page ORDER BY n DESC LIMIT 10`),
+    visitors: await safe(`SELECT id, name, first_seen, last_seen, visits FROM visitors
+                    ORDER BY last_seen DESC LIMIT 100`),
   }, null, 2), { headers: { 'Content-Type': 'application/json' } }));
 }
 

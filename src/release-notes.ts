@@ -1,6 +1,9 @@
 /* Release notes shown in the in-app update dialog — key = APP_VERSION.
    The weekly prep job must add an entry here whenever it bumps the version. */
 export const RELEASE_NOTES: Record<string, string[]> = {
+  '2.8.2': [
+    'Internal: activated private visit counting',
+  ],
   '2.8.1': [
     'Internal plumbing for optional private visit counting (dormant until the owner deploys it)',
   ],

@@ -9,7 +9,7 @@
  * After deploying backend/worker.js, set TRACK_URL to the /track endpoint and rebuild.
  */
 
-export const TRACK_URL = '' // e.g. 'https://jwtalk-worker.<your-subdomain>.workers.dev/track'
+export const TRACK_URL = 'https://jwtalk-worker.cyrilnt.workers.dev/track'
 
 const ID_KEY = 'jwtalk_visitor_id'
 

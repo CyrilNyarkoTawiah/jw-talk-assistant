@@ -16,4 +16,4 @@ compatibility_date = "2026-01-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "jwtalk-stats"
-database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+database_id = "8d989fde-c114-4c67-af39-a498c74042dd"

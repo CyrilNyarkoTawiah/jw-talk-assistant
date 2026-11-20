@@ -1,6 +1,9 @@
 /* Release notes shown in the in-app update dialog — key = APP_VERSION.
    The weekly prep job must add an entry here whenever it bumps the version. */
 export const RELEASE_NOTES: Record<string, string[]> = {
+  '2.8.4': [
+    'Internal: visit beacon reliability fix',
+  ],
   '2.8.3': [
     'The update prompt now must be updated to continue — no more Later option',
   ],

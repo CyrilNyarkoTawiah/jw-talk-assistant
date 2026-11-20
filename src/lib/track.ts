@@ -32,7 +32,9 @@ export function trackPage(page: string) {
       name: (localStorage.getItem('jwtalk_user') || '').slice(0, 40),
       page: page.slice(0, 120),
     })
-    const blob = new Blob([payload], { type: 'application/json' })
+    // text/plain is CORS-safelisted: no preflight, so the beacon survives page
+    // reloads (an application/json blob would preflight and get aborted)
+    const blob = new Blob([payload], { type: 'text/plain;charset=UTF-8' })
     if (navigator.sendBeacon?.(TRACK_URL, blob)) return
     void fetch(TRACK_URL, { method: 'POST', body: payload, keepalive: true })
   } catch { /* tracking must never break the app */ }

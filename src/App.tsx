@@ -3,7 +3,7 @@ import { HashRouter, Routes, Route, NavLink, useLocation } from 'react-router-do
 import {
   Home as HomeIcon, BookOpen, Landmark, Search, Mic2, CalendarDays,
   FolderOpen, Settings as SettingsIcon, Moon, Sun, Menu, BookOpenCheck,
-  Compass, RefreshCw, X,
+  Compass, RefreshCw,
 } from 'lucide-react'
 import Home from './pages/Home'
 import { trackPage } from './lib/track'
@@ -20,7 +20,7 @@ import ProfileSetup from './pages/ProfileSetup'
 import { RELEASE_NOTES } from './release-notes'
 
 /* bump this with every release — triggers the in-app update dialog */
-export const APP_VERSION = '2.8.2'
+export const APP_VERSION = '2.8.3'
 
 /* ---------- themes: each family has a light and a dark mode ---------- */
 export const THEMES = [
@@ -214,7 +214,6 @@ function UpdateDialog() {
     <>
       <div className="sheet-backdrop" />
       <div className="update-dialog">
-        <button className="upd-close" onClick={() => setShow(false)} aria-label="Later"><X size={15} /></button>
         <div className="brand-logo upd-ico"><RefreshCw size={20} /></div>
         <h3>Update available</h3>
         <p className="muted">
@@ -232,8 +231,7 @@ function UpdateDialog() {
             ))}
           </div>
         )}
-        <button className="btn primary" style={{ width: '100%', marginTop: 14 }} onClick={apply}>Refresh now</button>
-        <button className="btn ghost" style={{ width: '100%', marginTop: 8 }} onClick={() => setShow(false)}>Later</button>
+        <button className="btn primary" style={{ width: '100%', marginTop: 14 }} onClick={apply}>Update</button>
       </div>
     </>
   )

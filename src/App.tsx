@@ -6,6 +6,7 @@ import {
   Compass, RefreshCw, X,
 } from 'lucide-react'
 import Home from './pages/Home'
+import { trackPage } from './lib/track'
 import LifeAndMinistry from './pages/LifeAndMinistry'
 import WatchtowerStudy from './pages/WatchtowerStudy'
 import BibleStudy from './pages/BibleStudy'
@@ -19,7 +20,7 @@ import ProfileSetup from './pages/ProfileSetup'
 import { RELEASE_NOTES } from './release-notes'
 
 /* bump this with every release — triggers the in-app update dialog */
-export const APP_VERSION = '2.8.0'
+export const APP_VERSION = '2.8.1'
 
 /* ---------- themes: each family has a light and a dark mode ---------- */
 export const THEMES = [
@@ -323,6 +324,7 @@ if ('scrollRestoration' in window.history) window.history.scrollRestoration = 'm
 
 function ScrollKeeper() {
   const location = useLocation()
+  useEffect(() => { trackPage(location.pathname) }, [location.pathname])
   useEffect(() => {
     const y = SCROLL_REMEMBER.includes(location.pathname) ? (scrollMemory[location.pathname] ?? 0) : 0
     window.scrollTo(0, y)

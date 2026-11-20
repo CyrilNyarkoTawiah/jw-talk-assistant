@@ -1,0 +1,19 @@
+# Cloudflare Worker config for the JW Study Assistant backend.
+# Deploy steps (one-time, from this backend/ folder):
+#   1. npx wrangler login            (opens your Cloudflare account)
+#   2. npx wrangler d1 create jwtalk-stats
+#      → copy the printed database_id into the binding below
+#   3. npx wrangler secret put TRACK_TOKEN      (paste a random string, e.g. from `openssl rand -hex 16`)
+#      (+ AI_API_KEY / ACCESS_TOKEN only if you also use endpoint AI mode)
+#   4. npx wrangler deploy
+#   5. Tell Hermes the printed *.workers.dev URL — one constant in src/lib/track.ts activates tracking.
+# Tables are created automatically on the first tracked visit.
+
+name = "jwtalk-worker"
+main = "worker.js"
+compatibility_date = "2026-01-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "jwtalk-stats"
+database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"

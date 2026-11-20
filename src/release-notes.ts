@@ -1,6 +1,9 @@
 /* Release notes shown in the in-app update dialog — key = APP_VERSION.
    The weekly prep job must add an entry here whenever it bumps the version. */
 export const RELEASE_NOTES: Record<string, string[]> = {
+  '2.9.1': [
+    'The talk coach now recognises every Bible book in your outline',
+  ],
   '2.9.0': [
     'Talk Assistant is now a talk coach — it guides your own talk with scriptures, research leads and structure instead of writing it for you',
     'Your profile now asks for your full name at setup',

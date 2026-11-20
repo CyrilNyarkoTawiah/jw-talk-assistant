@@ -20,7 +20,7 @@ import ProfileSetup from './pages/ProfileSetup'
 import { RELEASE_NOTES } from './release-notes'
 
 /* bump this with every release — triggers the in-app update dialog */
-export const APP_VERSION = '2.9.0'
+export const APP_VERSION = '2.9.1'
 
 /* ---------- themes: each family has a light and a dark mode ---------- */
 export const THEMES = [

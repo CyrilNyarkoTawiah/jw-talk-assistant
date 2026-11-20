@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
-import { CalendarDays, Check, ChevronDown } from 'lucide-react'
-import { allWeeks, weekRange } from '../lib/app'
+import { CalendarDays, Check, ChevronDown, Lock } from 'lucide-react'
+import { allWeeks, isWeekUnlocked, weekRange } from '../lib/app'
 import { preparedFor } from '../lib/prepared'
 
-/** Selectable week pill used in the L&M and Study page headers. */
+/**
+ * Selectable week pill used in the L&M and Study page headers.
+ * Weeks beyond the next one stay LOCKED until the Friday before they begin.
+ */
 export default function WeekSwitcher({ selected, onSelect }: { selected: string; onSelect: (weekStart: string) => void }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -24,17 +27,26 @@ export default function WeekSwitcher({ selected, onSelect }: { selected: string;
       {open && (
         <div className="week-menu" role="listbox">
           {weeks.map((w) => {
+            const unlocked = isWeekUnlocked(w.weekStart)
             const p = preparedFor(w.weekStart)
             return (
               <button
                 key={w.weekStart}
-                className={'week-menu-row' + (w.weekStart === selected ? ' on' : '')}
-                onClick={() => { onSelect(w.weekStart); setOpen(false) }}
+                className={'week-menu-row' + (w.weekStart === selected ? ' on' : '') + (unlocked ? '' : ' locked')}
+                onClick={() => { if (!unlocked) return; onSelect(w.weekStart); setOpen(false) }}
                 role="option"
                 aria-selected={w.weekStart === selected}
+                aria-disabled={!unlocked}
+                title={unlocked ? undefined : 'Unlocks on the Friday before this week begins'}
               >
                 <span className="week-menu-range">{weekRange(w)}</span>
-                {p ? <span className="week-menu-ok"><Check size={11} /> prepared</span> : <span className="week-menu-no">not prepared</span>}
+                {!unlocked ? (
+                  <span className="week-menu-no"><Lock size={11} /> unlocks Friday</span>
+                ) : p ? (
+                  <span className="week-menu-ok"><Check size={11} /> prepared</span>
+                ) : (
+                  <span className="week-menu-no">not prepared</span>
+                )}
               </button>
             )
           })}

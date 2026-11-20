@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { allWeeks, currentWeek, useLibrary, weekRange } from '../lib/app'
+import { allWeeks, currentWeek, isWeekUnlocked, useLibrary, weekRange } from '../lib/app'
 import { preparedFor, preparedCurrent, type PreparedWTItem } from '../lib/prepared'
 import WeekSwitcher from '../components/WeekSwitcher'
 import { buildStudyPrompt, askAi, SYSTEM_INSTRUCTIONS } from '../lib/ai'
@@ -77,8 +77,9 @@ function WTItem({ it }: { it: PreparedWTItem }) {
 
 export default function WatchtowerStudy() {
   const [selWeek, setSelWeek] = useState(() => currentWeek()?.weekStart ?? '')
-  const week = allWeeks().find((w) => w.weekStart === selWeek) ?? currentWeek()
-  const prepared = (selWeek ? preparedFor(selWeek) : null) ?? preparedCurrent()
+  const effective = isWeekUnlocked(selWeek) ? selWeek : (currentWeek()?.weekStart ?? '')
+  const week = allWeeks().find((w) => w.weekStart === effective) ?? currentWeek()
+  const prepared = (effective ? preparedFor(effective) : null) ?? preparedCurrent()
   const { add } = useLibrary()
 
   // custom prep (secondary)

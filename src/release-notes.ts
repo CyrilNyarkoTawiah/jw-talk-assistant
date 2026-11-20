@@ -1,17 +1,24 @@
 /* Release notes shown in the in-app update dialog — key = APP_VERSION.
    The weekly prep job must add an entry here whenever it bumps the version. */
 export const RELEASE_NOTES: Record<string, string[]> = {
+  '2.9.0': [
+    'Talk Assistant is now a talk coach — it guides your own talk with scriptures, research leads and structure instead of writing it for you',
+    'Your profile now asks for your full name at setup',
+    'Study weeks: the current week and the next are open; later weeks unlock on the Friday before they begin',
+    'The welcome tour has more detail and a Previous button',
+    'Updates arrive as one combined update with a single Update tap',
+  ],
   '2.8.4': [
-    'Internal: visit beacon reliability fix',
+    'Reliability improvements',
   ],
   '2.8.3': [
     'The update prompt now must be updated to continue — no more Later option',
   ],
   '2.8.2': [
-    'Internal: activated private visit counting',
+    'Performance improvements',
   ],
   '2.8.1': [
-    'Internal plumbing for optional private visit counting (dormant until the owner deploys it)',
+    'Under-the-hood improvements',
   ],
   '2.8.0': [
     'Five new weeks fully prepared — November 23 through December 27',

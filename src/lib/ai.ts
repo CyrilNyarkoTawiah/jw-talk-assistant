@@ -82,6 +82,43 @@ export function buildTalkPrompt(outline: string, opts: TalkOptions): string {
   return p
 }
 
+/** Coaching prompt: pointers and research for the user's OWN talk — never a manuscript. */
+export function buildTalkGuidePrompt(outline: string, opts: { durationMin: number; audience?: string; extra?: string }): string {
+  let p = `Act as a seasoned ministry coach. A minister will deliver a public talk from the outline below. Your job is to prepare HIM, not the talk.
+
+`
+  p += `HARD RULE:
+`
+  p += `- Do NOT write the talk. Do NOT write any sentences meant to be delivered word-for-word. Produce guidance only — pointers, questions, research leads and coaching notes the minister can act on.
+
+`
+  p += `Return these sections, each with short scannable bullets:
+`
+  p += `1. THE THEME IN ONE QUESTION — restate the theme's central thrust as a single question the whole talk must answer.
+`
+  p += `2. POINT-BY-POINT COACHING — for each main point in the outline: the central thought to establish; what the cited scripture actually proves there (name the passage; explain its context in one or two lines, do not quote it at length); 2-3 questions the audience should be able to answer after this point; one way to transition to the next point.
+`
+  p += `3. SCRIPTURE WORK — for every cited passage: whether to read it aloud or summarise it, what to draw out when reading, and one related passage worth checking on wol.jw.org.
+`
+  p += `4. RESEARCH POINTERS — specific search phrases and topics to look up on jw.org and wol.jw.org (publications, Insight on the Scriptures, the current study material), and what to take from each. Only suggest real, well-known publications and search topics; never invent titles.
+`
+  p += `5. OPENING AND LANDING — three different introduction approaches suited to this theme to choose from; how to conclude so the theme lands and the audience leaves with ONE clear takeaway.
+`
+  p += `6. DELIVERY COACHING — pacing, where to slow down, where a pause or a direct question to the audience lands well, warmth vs gravity.
+`
+  p += `7. TIMING PLAN — a minute-by-minute allocation across the points for a ${opts.durationMin}-minute delivery, including scripture readings.${opts.audience ? ` Audience context: ${opts.audience}.` : ''}
+`
+  if (opts.extra) p += `
+Extra instructions from the speaker: ${opts.extra}
+`
+  p += `
+Use the NWT only for any scripture reference. Mark anything you are not certain of as CHECK. Keep every section practical — the minister should finish reading your guide knowing exactly what to do next, not holding a finished talk.
+
+OUTLINE:
+${outline}`
+  return p
+}
+
 export function buildStudyPrompt(questions: string, material: string, style: string): string {
   let p = `Prepare congregation meeting answers for the questions below.\n\n`
   p += `RULES: Answer EVERY question and every part of each question, in order. Use the NWT only. Quote scripture verbatim when it is the direct evidence; if the supplied material cites a supporting scripture, use it and explain its relevance. Never invent publication titles, paragraph numbers or quotations. Distinguish: direct answer / scripture evidence / explanation from the material / practical application.\n`

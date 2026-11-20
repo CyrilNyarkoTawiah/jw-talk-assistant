@@ -20,7 +20,7 @@ import ProfileSetup from './pages/ProfileSetup'
 import { RELEASE_NOTES } from './release-notes'
 
 /* bump this with every release — triggers the in-app update dialog */
-export const APP_VERSION = '2.8.4'
+export const APP_VERSION = '2.9.0'
 
 /* ---------- themes: each family has a light and a dark mode ---------- */
 export const THEMES = [
@@ -205,8 +205,11 @@ function UpdateDialog() {
         const ks = await caches.keys()
         ks.forEach((k) => caches.delete(k))
       }
+      // refresh the browser's HTTP-cache entry for the shell BEFORE reloading so the
+      // single reload really lands on the newest deployment (no double-refresh)
+      await fetch('index.html', { cache: 'reload' }).catch(() => {})
     } catch { /* ignore */ }
-    localStorage.setItem('jwtalk_app_ver', APP_VERSION)
+    localStorage.setItem('jwtalk_app_ver', pendingVer)
     location.reload()
   }
   if (!show) return null
@@ -354,7 +357,7 @@ function Page({ children }: { children: React.ReactNode }) {
 
 function AppInner() {
   const [splash, setSplash] = useState(true)
-  const [profileDone, setProfileDone] = useState(() => !!localStorage.getItem('jwtalk_profile_done'))
+  const [profileDone, setProfileDone] = useState(() => !!localStorage.getItem('jwtalk_user'))
   const [showOnboard, setShowOnboard] = useState(() => !!localStorage.getItem('jwtalk_profile_done') && !localStorage.getItem('jwtalk_onboarded'))
   return (
     <>

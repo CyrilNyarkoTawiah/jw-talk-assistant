@@ -31,6 +31,21 @@ export function isCurrent(entry: WeekEntry): boolean {
   return entry.weekStart === weekStartOf(new Date())
 }
 
+/**
+ * A week unlocks on the FRIDAY before it begins (weeks run Monday–Sunday,
+ * so unlock day = weekStart minus 3 days). Only the current and next weeks
+ * are normally unlocked; further weeks stay locked to keep people preparing
+ * one week at a time, not gulping the whole month.
+ */
+export function isWeekUnlocked(weekStart: string): boolean {
+  const [y, m, d] = weekStart.split('-').map(Number)
+  if (!y || !m || !d) return true
+  const unlock = new Date(Date.UTC(y, m - 1, d - 3)) // the Friday before
+  const now = new Date()
+  const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())
+  return today >= unlock.getTime()
+}
+
 export function allWeeks(): WeekEntry[] {
   return registry.weeks
 }

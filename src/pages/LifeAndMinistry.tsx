@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { allWeeks, currentWeek, JW_LINKS, useLibrary, weekRange } from '../lib/app'
+import { allWeeks, currentWeek, isWeekUnlocked, JW_LINKS, useLibrary, weekRange } from '../lib/app'
 import { preparedFor, preparedCurrent, type PreparedLMItem, type PreparedPicture } from '../lib/prepared'
 import WeekSwitcher from '../components/WeekSwitcher'
 import { buildStudyPrompt, buildGemsPrompt, askAi, SYSTEM_INSTRUCTIONS } from '../lib/ai'
@@ -72,8 +72,9 @@ function PictureCard({ pic }: { pic: PreparedPicture }) {
 
 export default function LifeAndMinistry() {
   const [selWeek, setSelWeek] = useState(() => currentWeek()?.weekStart ?? '')
-  const week = allWeeks().find((w) => w.weekStart === selWeek) ?? currentWeek()
-  const prepared = (selWeek ? preparedFor(selWeek) : null) ?? preparedCurrent()
+  const effective = isWeekUnlocked(selWeek) ? selWeek : (currentWeek()?.weekStart ?? '')
+  const week = allWeeks().find((w) => w.weekStart === effective) ?? currentWeek()
+  const prepared = (effective ? preparedFor(effective) : null) ?? preparedCurrent()
   const { add } = useLibrary()
 
   // ---- extra (custom) prep, secondary tool ----

@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { currentWeek, useLibrary, weekRange } from '../lib/app'
-import { preparedCurrent, type PreparedWTItem } from '../lib/prepared'
+import { allWeeks, currentWeek, useLibrary, weekRange } from '../lib/app'
+import { preparedFor, preparedCurrent, type PreparedWTItem } from '../lib/prepared'
+import WeekSwitcher from '../components/WeekSwitcher'
 import { buildStudyPrompt, askAi, SYSTEM_INSTRUCTIONS } from '../lib/ai'
-import { Copy, Check, ExternalLink, Sparkles, Printer, Share2, CheckCircle2, CalendarDays, Lightbulb } from 'lucide-react'
+import { Copy, Check, ExternalLink, Sparkles, Printer, Share2, CheckCircle2, Lightbulb } from 'lucide-react'
 
 const STYLES = ['Short comment (15-25 seconds)', 'Standard comment (25-40 seconds)', 'Detailed comment (40-60 seconds)', 'Deep research answer', 'Additional comment', 'Practical application']
 
@@ -75,8 +76,9 @@ function WTItem({ it }: { it: PreparedWTItem }) {
 }
 
 export default function WatchtowerStudy() {
-  const week = currentWeek()
-  const prepared = preparedCurrent()
+  const [selWeek, setSelWeek] = useState(() => currentWeek()?.weekStart ?? '')
+  const week = allWeeks().find((w) => w.weekStart === selWeek) ?? currentWeek()
+  const prepared = (selWeek ? preparedFor(selWeek) : null) ?? preparedCurrent()
   const { add } = useLibrary()
 
   // custom prep (secondary)
@@ -124,7 +126,7 @@ export default function WatchtowerStudy() {
         <span className="eyebrow">Weekend meeting</span>
         <h1>Watchtower Study</h1>
         <div className="head-row">
-          {week && <span className="week-chip"><CalendarDays size={13} /> {weekRange(week)}</span>}
+          {week && <WeekSwitcher selected={week.weekStart} onSelect={setSelWeek} />}
           {week && (
             <a className="src-chip" href={week.watchtower.sourceUrl} target="_blank" rel="noreferrer">
               Study article <ExternalLink size={11} />

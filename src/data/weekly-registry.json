@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "note": "Manually maintained weekly content registry. Links point to official JW.ORG / WOL pages; no publication text is stored here. Update weekly via the administrator section in Settings, or by editing this file.",
+  "note": "Manually maintained weekly content registry. Links point to official JW.ORG / WOL pages; no publication text is stored here. Update weekly via the administrator section in Settings, or by editing this file. Study articles resolved from the official study-edition Tables of Contents (September/October 2026 study issues).",
   "weeks": [
     {
       "weekStart": "2026-11-16",
@@ -8,14 +8,104 @@
       "language": "en",
       "lifeAndMinistry": {
         "publication": "Our Christian Life and Ministry Meeting Workbook — November 2026",
-        "sourceUrl": "https://wol.jw.org/en/wol/d/r1/lp-e/1102026210",
-        "sections": ["Treasures From God's Word", "Apply Yourself to the Field Ministry", "Living as Christians", "Bible Reading"]
+        "sourceUrl": "https://wol.jw.org/en/wol/d/r1/lp-e/202026403",
+        "sections": []
       },
       "watchtower": {
-        "publication": "The Watchtower (Study Edition)",
-        "articleTitle": "November 16-22 study week",
-        "studyDate": "",
-        "sourceUrl": "https://wol.jw.org/en/wol/d/r1/lp-e/202026403"
+        "publication": "The Watchtower (Study) — 2026",
+        "articleTitle": "Sharing the Good News in “All the Languages of the Nations”",
+        "studyDate": "November 16-22 study week",
+        "sourceUrl": "https://wol.jw.org/en/wol/d/r1/lp-e/2026562"
+      },
+      "meetingsHub": "https://wol.jw.org/en/wol/meetings/r1/lp-e",
+      "dailyText": "https://wol.jw.org/en/wol/dt/r1/lp-e"
+    },
+    {
+      "weekStart": "2026-11-23",
+      "weekEnd": "2026-11-29",
+      "language": "en",
+      "lifeAndMinistry": {
+        "publication": "Our Christian Life and Ministry Meeting Workbook — November 2026",
+        "sourceUrl": "https://wol.jw.org/en/wol/d/r1/lp-e/202026404",
+        "sections": []
+      },
+      "watchtower": {
+        "publication": "The Watchtower (Study) — 2026",
+        "articleTitle": "How the Priesthood Reveals Jehovah’s Love",
+        "studyDate": "November 23-29 study week",
+        "sourceUrl": "https://wol.jw.org/en/wol/d/r1/lp-e/2026565"
+      },
+      "meetingsHub": "https://wol.jw.org/en/wol/meetings/r1/lp-e",
+      "dailyText": "https://wol.jw.org/en/wol/dt/r1/lp-e"
+    },
+    {
+      "weekStart": "2026-11-30",
+      "weekEnd": "2026-12-06",
+      "language": "en",
+      "lifeAndMinistry": {
+        "publication": "Our Christian Life and Ministry Meeting Workbook — November 2026",
+        "sourceUrl": "https://wol.jw.org/en/wol/d/r1/lp-e/202026405",
+        "sections": []
+      },
+      "watchtower": {
+        "publication": "The Watchtower (Study) — 2026",
+        "articleTitle": "Guard Against “the Spirit of the World”",
+        "studyDate": "November 30–December 6 study week",
+        "sourceUrl": "https://wol.jw.org/en/wol/d/r1/lp-e/2026566"
+      },
+      "meetingsHub": "https://wol.jw.org/en/wol/meetings/r1/lp-e",
+      "dailyText": "https://wol.jw.org/en/wol/dt/r1/lp-e"
+    },
+    {
+      "weekStart": "2026-12-07",
+      "weekEnd": "2026-12-13",
+      "language": "en",
+      "lifeAndMinistry": {
+        "publication": "Our Christian Life and Ministry Meeting Workbook — November 2026",
+        "sourceUrl": "https://wol.jw.org/en/wol/d/r1/lp-e/202026406",
+        "sections": []
+      },
+      "watchtower": {
+        "publication": "The Watchtower (Study) — 2026",
+        "articleTitle": "Show Yourself Thankful—Why and How?",
+        "studyDate": "December 7-13 study week",
+        "sourceUrl": "https://wol.jw.org/en/wol/d/r1/lp-e/2026601"
+      },
+      "meetingsHub": "https://wol.jw.org/en/wol/meetings/r1/lp-e",
+      "dailyText": "https://wol.jw.org/en/wol/dt/r1/lp-e"
+    },
+    {
+      "weekStart": "2026-12-14",
+      "weekEnd": "2026-12-20",
+      "language": "en",
+      "lifeAndMinistry": {
+        "publication": "Our Christian Life and Ministry Meeting Workbook — November 2026",
+        "sourceUrl": "https://wol.jw.org/en/wol/d/r1/lp-e/202026407",
+        "sections": []
+      },
+      "watchtower": {
+        "publication": "The Watchtower (Study) — 2026",
+        "articleTitle": "Treasure Your Share in Modern-Day Miracles",
+        "studyDate": "December 14-20 study week",
+        "sourceUrl": "https://wol.jw.org/en/wol/d/r1/lp-e/2026602"
+      },
+      "meetingsHub": "https://wol.jw.org/en/wol/meetings/r1/lp-e",
+      "dailyText": "https://wol.jw.org/en/wol/dt/r1/lp-e"
+    },
+    {
+      "weekStart": "2026-12-21",
+      "weekEnd": "2026-12-27",
+      "language": "en",
+      "lifeAndMinistry": {
+        "publication": "Our Christian Life and Ministry Meeting Workbook — November 2026",
+        "sourceUrl": "https://wol.jw.org/en/wol/d/r1/lp-e/202026408",
+        "sections": []
+      },
+      "watchtower": {
+        "publication": "The Watchtower (Study) — 2026",
+        "articleTitle": "Together We “Take a Stand”",
+        "studyDate": "December 21-27 study week",
+        "sourceUrl": "https://wol.jw.org/en/wol/d/r1/lp-e/2026604"
       },
       "meetingsHub": "https://wol.jw.org/en/wol/meetings/r1/lp-e",
       "dailyText": "https://wol.jw.org/en/wol/dt/r1/lp-e"

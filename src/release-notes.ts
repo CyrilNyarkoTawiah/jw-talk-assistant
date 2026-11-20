@@ -1,6 +1,10 @@
 /* Release notes shown in the in-app update dialog — key = APP_VERSION.
    The weekly prep job must add an entry here whenever it bumps the version. */
 export const RELEASE_NOTES: Record<string, string[]> = {
+  '2.8.0': [
+    'Five new weeks fully prepared — November 23 through December 27',
+    'Tap the week pill on the L&M and Study pages to switch between weeks',
+  ],
   '2.7.5': [
     'Fix: the refresh button on the news feed now works',
   ],

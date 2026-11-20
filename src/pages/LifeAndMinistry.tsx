@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { currentWeek, JW_LINKS, useLibrary, weekRange } from '../lib/app'
-import { preparedCurrent, type PreparedLMItem, type PreparedPicture } from '../lib/prepared'
+import { allWeeks, currentWeek, JW_LINKS, useLibrary, weekRange } from '../lib/app'
+import { preparedFor, preparedCurrent, type PreparedLMItem, type PreparedPicture } from '../lib/prepared'
+import WeekSwitcher from '../components/WeekSwitcher'
 import { buildStudyPrompt, buildGemsPrompt, askAi, SYSTEM_INSTRUCTIONS } from '../lib/ai'
-import { Copy, Check, ExternalLink, Sparkles, Printer, Share2, CheckCircle2, CalendarDays, ImageIcon, Gem, Megaphone, Users } from 'lucide-react'
+import { Copy, Check, ExternalLink, Sparkles, Printer, Share2, CheckCircle2, ImageIcon, Gem, Megaphone, Users } from 'lucide-react'
 
 const STYLES = [
   'Short comment (15-25 seconds)',
@@ -70,8 +71,9 @@ function PictureCard({ pic }: { pic: PreparedPicture }) {
 }
 
 export default function LifeAndMinistry() {
-  const week = currentWeek()
-  const prepared = preparedCurrent()
+  const [selWeek, setSelWeek] = useState(() => currentWeek()?.weekStart ?? '')
+  const week = allWeeks().find((w) => w.weekStart === selWeek) ?? currentWeek()
+  const prepared = (selWeek ? preparedFor(selWeek) : null) ?? preparedCurrent()
   const { add } = useLibrary()
 
   // ---- extra (custom) prep, secondary tool ----
@@ -148,7 +150,7 @@ export default function LifeAndMinistry() {
         <span className="eyebrow">Midweek meeting</span>
         <h1>Life &amp; Ministry Meeting</h1>
         <div className="head-row">
-          {week && <span className="week-chip"><CalendarDays size={13} /> {weekRange(week)}</span>}
+          {week && <WeekSwitcher selected={week.weekStart} onSelect={setSelWeek} />}
           {week && (
             <a className="src-chip" href={week.lifeAndMinistry.sourceUrl} target="_blank" rel="noreferrer">
               Workbook <ExternalLink size={11} />

@@ -3,7 +3,6 @@
 A mobile-first web app for preparing congregation meetings and understanding the material
 before you sit down for them.
 
-**Live:** https://cyrilnyarkotawiah.github.io/jw-talk-assistant/
 
 **What it does**
 
